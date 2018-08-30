@@ -5,14 +5,14 @@ use value::func::Native;
 use value::ast::Ast;
 use std::prelude::v1::String;
 
-mod ast;
-mod func;
+pub mod ast;
+pub mod func;
 
 ///## 类型重命名
 pub type Handle<T> = Arc<T>;
 pub type _Str = Handle<String>;
 pub type _Tuple = Handle<Vec<Value>>;
-pub type _Dict = Handle<Handle<HashMap<String, Value>>>;
+pub type _Dict = Handle<HashMap<String, Value>>;
 pub type _Ast = Handle<Ast>;
 pub type _Function = Handle<Function>;
 pub type _Native = Handle<Native>;
@@ -88,16 +88,16 @@ impl Value {
             Value::UInt(x) => x.to_string(),
             Value::Bool(x) => x.to_string(),
             Value::Char(x) => x.to_string(),
+            Value::Float(x) => x.to_string(),
             Value::Symbol(x) => x.to_string(),
             Value::String(x) => x.to_string(),
+            Value::Object(_) => "<object>".to_string(),
+            Value::Native(x) => "<native ".to_string() + &*x.name + ">",
             Value::Function(x) => "<function ".to_string() + &*x.name + ">",
-            Value::Native(x) => "<function ".to_string() + &*x.name + ">",
             // 还没写好的
             Value::Ast(_) => "ast".to_string(),
             Value::Dict(_) => "dict".to_string(),
-            Value::Float(_) => "float".to_string(),
             Value::Tuple(_) => "tuple".to_string(),
-            Value::Object(_) => "object".to_string(),
         }
     }
 }
