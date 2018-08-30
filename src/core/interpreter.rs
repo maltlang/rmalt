@@ -18,5 +18,5 @@ pub struct InterpreterContext {
     // mempool
     pub moduletable: HashMap<String, Arc<module::Module>>,
     pub framestack: Cell<Box<FunctionContext>>,
-
+    pub using_module: Weak<module::Module>,
 }

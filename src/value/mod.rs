@@ -50,11 +50,11 @@ impl Value {
     // is_atom(in stack)
     fn is_atom(&self) -> bool {
         match self {
-            Value::Nil      |
-            Value::Int(_)   |
-            Value::UInt(_)  |
-            Value::Bool(_)  |
-            Value::Char(_)  |
+            Value::Nil |
+            Value::Int(_) |
+            Value::UInt(_) |
+            Value::Bool(_) |
+            Value::Char(_) |
             Value::Float(_) => true,
             _ => false,
         }

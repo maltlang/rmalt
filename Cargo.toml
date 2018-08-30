@@ -3,4 +3,19 @@ name = "rmalt"
 version = "0.1.0"
 authors = ["Zhihang-Liu <enterindex@gmail.com>"]
 
+[lib]
+name = "librmalt"
+path = "./src/lib.rs"
+crate-type = ["cdylib"]
+
+[[bin]]
+name = "rmalt"
+path = "./src/main.rs"
+
+[[bin]]
+name = "malt2rust"
+path = "./src/malt2rust.rs"
+
+
 [dependencies]
+#libloading = "0.5.0"

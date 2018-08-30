@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+use value::Value;
 use value::ast::Ast;
 
 pub struct Module {
-    path: String,
-
-    asts: Vec<Ast>,
+    pub path: String,
+    pub asts: Vec<Ast>,
+    pub vartable: HashMap<String, Value>
 }

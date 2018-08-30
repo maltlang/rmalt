@@ -8,18 +8,18 @@ use core::interpreter::InterpreterContext;
 use std::sync::Weak;
 
 pub struct Function {
-    pub modu    :Weak<module::Module>,
-    pub name    :String,
-    pub env     :Arc<FunctionContext>,
-    pub expr    :Ast,
+    pub modu: Weak<module::Module>,
+    pub name: String,
+    pub env: Arc<FunctionContext>,
+    pub expr: Ast,
 }
 
 pub struct Native {
-    pub name    :String,
-    pub fp      :fn(Arc<InterpreterContext>, _Tuple)->Value,
+    pub name: String,
+    pub fp: fn(Arc<InterpreterContext>, _Tuple) -> Value,
 }
 
 pub trait Call {
-    fn call(&self, ic: Arc<InterpreterContext>, args: _Tuple)->Value;
+    fn call(&self, ic: Arc<InterpreterContext>, args: _Tuple) -> Value;
 }
 

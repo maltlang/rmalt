@@ -1,6 +1,7 @@
 mod value;
 mod core;
 
-fn main() {
+#[no_mangle]
+extern "C" fn emmm() {
     print!("hhh");
 }
