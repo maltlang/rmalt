@@ -13,7 +13,7 @@ use core::interpreter::InterpreterContext;
 
 
 impl Call for Function {
-    fn call(&self, ic: Arc<InterpreterContext>, args: _Tuple) -> Value {
+    fn call(&self, _ic: Arc<InterpreterContext>, _args: _Tuple) -> Value {
         Value::Nil
     }
 }

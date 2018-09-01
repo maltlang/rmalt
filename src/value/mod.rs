@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use value::func::Function;
 use value::func::Native;
 use value::ast::Ast;
-use std::prelude::v1::String;
 
 pub mod ast;
 pub mod func;

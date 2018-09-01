@@ -12,9 +12,9 @@ crate-type = ["cdylib"]
 name = "rmalt"
 path = "./src/main.rs"
 
-[[bin]]
-name = "malt2rust"
-path = "./src/malt2rust.rs"
+#[[bin]]
+#name = "malt2rust"
+#path = "./src/malt2rust.rs"
 
 
 [dependencies]

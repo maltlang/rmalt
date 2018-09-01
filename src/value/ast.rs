@@ -1,9 +1,7 @@
 use std::sync::Arc;
 use value::Value;
 use value::_Str;
-
-struct FunctionContext;
-struct InterpreterContext;
+use core::interpreter::InterpreterContext;
 
 pub struct QuoteAst {
     pub expr: Ast,
