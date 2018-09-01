@@ -73,7 +73,6 @@ pub fn lexer(s: &str) -> Vec<Token> {
                             strpos = TokenPos { line: 0, col: 0 };
                             strbuf.clear();
                         };
-                        col += 1;
                     }
                     '\n' => {
                         if (*strbuf).len() > 0 {
@@ -173,7 +172,6 @@ pub fn lexer(s: &str) -> Vec<Token> {
                         });
                     }
                     '\"' => {
-                        println!("lexer string");
                         if (*strbuf).len() > 0 {
                             rs.push(Token {
                                 val: other_get(&strbuf),
