@@ -3,8 +3,8 @@ use std::sync::Weak;
 use std::cell::Cell;
 use std::collections::HashMap;
 use value::Value;
-use value::ast::Ast;
-use value::func::Function;
+use ast::Ast;
+use func::Function;
 use core::module;
 
 pub struct FunctionContext {

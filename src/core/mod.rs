@@ -6,9 +6,9 @@ pub mod interpreter;
 use std::sync::Arc;
 use value::Value;
 use value::_Tuple;
-use value::func::Call;
-use value::func::Function;
-use value::func::Native;
+use func::Call;
+use func::Function;
+use func::Native;
 use core::interpreter::InterpreterContext;
 
 

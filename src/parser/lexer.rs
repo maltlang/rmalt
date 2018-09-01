@@ -1,7 +1,12 @@
+extern crate regex;
+
 use parser::token::TokenValue;
 use parser::token::TokenPos;
 use parser::token::Token;
 use std::sync::Arc;
+
+//use regex::Regex;
+use self::regex::Regex;
 
 enum Mode {
     CODE,
@@ -9,8 +14,29 @@ enum Mode {
     STRING,
 }
 
-fn other_get(_s: &str) -> TokenValue {
-    TokenValue::QUO
+fn other_get(s: &str) -> TokenValue {
+    let nr: regex::Regex = regex::Regex::new(r"(-|\+)?[0-9]+[.][0-9]+").unwrap();
+    let ir: regex::Regex = regex::Regex::new(r"(-|\+)?[0-9]+").unwrap();
+    if nr.is_match(s) {
+        return match s.parse() {
+            Ok(x) => TokenValue::FLOAT(x),
+            Err(_) => TokenValue::SYMBOL(Arc::new(s.to_string())),
+        };
+    }
+    if ir.is_match(s) {
+        if s.chars().nth(0).unwrap() == '+' || s.chars().nth(0).unwrap() == '-' {
+            return match s.parse() {
+                Ok(x) => TokenValue::INT(x),
+                Err(_) => TokenValue::SYMBOL(Arc::new(s.to_string())),
+            };
+        } else {
+            return match s.parse() {
+                Ok(x) => TokenValue::UINT(x),
+                Err(_) => TokenValue::SYMBOL(Arc::new(s.to_string())),
+            };
+        }
+    }
+    TokenValue::SYMBOL(Arc::new(s.to_string()))
 }
 
 //impl Token {
@@ -33,6 +59,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                                 pos: strpos,
                             });
                             strpos = TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
                         };
                         mode = Mode::NOTE;
                         continue;
@@ -44,6 +71,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                                 pos: strpos,
                             });
                             strpos = TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
                         };
                         col += 1;
                     }
@@ -54,6 +82,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                                 pos: strpos,
                             });
                             strpos = TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
                         };
                         line += 1;
                         col = 0;
@@ -65,6 +94,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                                 pos: strpos,
                             });
                             strpos = TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
                         };
                         rs.push(Token {
                             val: TokenValue::LP,
@@ -81,6 +111,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                                 pos: strpos,
                             });
                             strpos = TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
                         };
                         rs.push(Token {
                             val: TokenValue::RP,
@@ -97,6 +128,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                                 pos: strpos,
                             });
                             strpos = TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
                         };
                         rs.push(Token {
                             val: TokenValue::LMP,
@@ -113,6 +145,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                                 pos: strpos,
                             });
                             strpos = TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
                         };
                         rs.push(Token {
                             val: TokenValue::RMP,
@@ -129,6 +162,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                                 pos: strpos,
                             });
                             strpos = TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
                         };
                         rs.push(Token {
                             val: TokenValue::QUO,
@@ -145,8 +179,10 @@ pub fn lexer(s: &str) -> Vec<Token> {
                                 val: other_get(&strbuf),
                                 pos: strpos,
                             });
-                            strpos = TokenPos { line: 0, col: 0 };
-                        };
+                            strpos.line = 0;
+                            strpos.col = 0;//= TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
+                        }
                         mode = Mode::STRING;
                         strpos = TokenPos {
                             line,

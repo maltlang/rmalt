@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use value::Value;
-use value::ast::Ast;
+use ast::Ast;
 
 pub struct Module {
     pub path: String,

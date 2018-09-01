@@ -1,6 +1,8 @@
 use std::io;
 
 pub mod value;
+pub mod ast;
+pub mod func;
 pub mod core;
 pub mod parser;
 

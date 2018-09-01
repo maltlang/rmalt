@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use value::Value;
 use value::_Tuple;
-use value::ast::Ast;
+use ast::Ast;
 use core::module;
 use core::interpreter::FunctionContext;
 use core::interpreter::InterpreterContext;

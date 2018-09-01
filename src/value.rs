@@ -1,11 +1,8 @@
 use std::sync::Arc;
 use std::collections::HashMap;
-use value::func::Function;
-use value::func::Native;
-use value::ast::Ast;
-
-pub mod ast;
-pub mod func;
+use func::Function;
+use func::Native;
+use ast::Ast;
 
 ///## 类型重命名
 pub type Handle<T> = Arc<T>;
