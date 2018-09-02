@@ -10,7 +10,7 @@ use core::module;
 pub struct FunctionContext {
     pub fp: Weak<Function>,
     pub ap: Weak<Ast>,
-    pub vartable: HashMap<String, Value>,
+    pub vartable: Cell<HashMap<String, Value>>,
     pub next: Box<FunctionContext>,
 }
 
@@ -21,7 +21,7 @@ pub struct ThrandContext {
 }
 
 pub struct InterpreterContext {
-    pub module_table: HashMap<String, Arc<module::Module>>,
+    pub module_table: Cell<HashMap<String, Arc<module::Module>>>,
     pub thrand_pool: Vec<ThrandContext>,
 }
 
