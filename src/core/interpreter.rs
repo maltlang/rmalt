@@ -26,13 +26,7 @@ pub struct InterpreterContext {
 }
 
 impl InterpreterContext {
-    pub fn init(argc: u64, argv: &[&str]) -> InterpreterContext {
-
-    }
-    pub fn new() -> InterpreterContext {
-
-    }
-    pub fn run(&self) -> ! {
-
-    }
+    // pub fn init(argc: u64, argv: &[&str]) -> InterpreterContext {}
+    //pub fn new() -> InterpreterContext {}
+    //pub fn run(&self) -> ! {}
 }
