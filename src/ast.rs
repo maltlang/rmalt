@@ -80,6 +80,14 @@ pub enum Ast {
     FCall(Arc<FCallAst>),
 }
 
+impl ToString for Ast {
+    fn to_string(&self) -> String {
+        match self {
+            _ => "".to_string()
+        }
+    }
+}
+
 trait Eval {
     fn eval(&self, ic :Arc<InterpreterContext>) -> Value;
 }

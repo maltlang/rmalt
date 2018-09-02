@@ -14,9 +14,25 @@ pub struct FunctionContext {
     pub next: Box<FunctionContext>,
 }
 
-pub struct InterpreterContext {
-    // mempool
-    pub moduletable: HashMap<String, Arc<module::Module>>,
-    pub framestack: Cell<Box<FunctionContext>>,
+pub struct ThrandContext {
+    pub name: String,
     pub using_module: Weak<module::Module>,
+    pub framestack: Cell<Box<FunctionContext>>,
+}
+
+pub struct InterpreterContext {
+    pub module_table: HashMap<String, Arc<module::Module>>,
+    pub thrand_pool: Vec<ThrandContext>,
+}
+
+impl InterpreterContext {
+    pub fn init(argc: u64, argv: &[&str]) -> InterpreterContext {
+
+    }
+    pub fn new() -> InterpreterContext {
+
+    }
+    pub fn run(&self) -> ! {
+
+    }
 }
