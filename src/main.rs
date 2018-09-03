@@ -15,6 +15,7 @@ fn main() {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         let _tf = parser::lexer::lexer(&input);
+        if _tf.len() == 0 { continue; }
         let ast = parser::parser_once(&_tf, 0);
         match parser::parser_once(&_tf, 0) {
             Ok((o, idx)) => println!("{}", o.to_string()),

@@ -82,14 +82,18 @@ impl ToString for Ast {
     fn to_string(&self) -> String {
         match self {
             Ast::Nil => "nil".to_string(),
-            Ast::Bool(ref x) => x.to_string(),
-            Ast::Char(ref x) => x.to_string(),
-            Ast::Int(ref x) => x.to_string(),
-            Ast::UInt(ref x) => x.to_string(),
-            Ast::Float(ref x) => x.to_string(),
+            Ast::Bool(ref x) => match x {
+                true => "bool: true".to_string(),
+                false => "bool: false".to_string(),
+            },
+            Ast::Char(ref x) => "char: ".to_string() + &x.to_string(),
+            Ast::Int(ref x) => "int: ".to_string() + &x.to_string(),
+            Ast::UInt(ref x) => "uint: ".to_string() + &x.to_string(),
+            Ast::Float(ref x) => "float: ".to_string() + &x.to_string(),
+            Ast::String(ref x) => "string: ".to_string() + &x.to_string(),
+            Ast::Symbol(ref x) => "symbol: ".to_string() + &x.to_string(),
             /*
-            Ast::String(ref x),
-            Ast::Symbol(x),
+
             Ast::Tuple(x),
             Ast::Quote(x),
             Ast::Cond(x),
