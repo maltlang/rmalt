@@ -15,10 +15,8 @@ fn main() {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         let _tf = parser::lexer::lexer(&input);
-        let ast = parser::parser_once(&_tf, 0);
-        match parser::parser_once(&_tf, 0) {
-            Ok((o, idx)) => println!("{}", o.to_string()),
-            Err(x) => eprintln!("SyntaxError {}:{}", &_tf[x].pos.line, &_tf[x].pos.col),
+        for i in &_tf {
+            println!("{}", i.to_string());
         }
     }
 }

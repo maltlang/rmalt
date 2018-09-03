@@ -12,14 +12,13 @@ pub struct TupleAst {
 }
 
 pub struct CondAst {
-    pub pair: Vec<TupleAst>,
+    pub pair: Vec<(Ast, Ast)>,
 }
 
 pub struct MatchAst {
     pub cval: Ast, // cond value
-    pub pair: Vec<TupleAst>,
+    pub pair: Vec<(Ast, Ast)>,
 }
-
 
 pub struct LoopAst {
     pub expr: Vec<Ast>,
@@ -35,7 +34,6 @@ pub struct WhileAst {
     pub cond: Ast,
     pub expr: Vec<Ast>,
 }
-
 
 pub struct DefunAst {
     pub name: String,
@@ -83,7 +81,25 @@ pub enum Ast {
 impl ToString for Ast {
     fn to_string(&self) -> String {
         match self {
-            _ => "".to_string()
+            Ast::Nil => "nil".to_string(),
+            Ast::Bool(ref x) => x.to_string(),
+            Ast::Char(ref x) => x.to_string(),
+            Ast::Int(ref x) => x.to_string(),
+            Ast::UInt(ref x) => x.to_string(),
+            Ast::Float(ref x) => x.to_string(),
+            /*
+            Ast::String(ref x),
+            Ast::Symbol(x),
+            Ast::Tuple(x),
+            Ast::Quote(x),
+            Ast::Cond(x),
+            Ast::Match(x),
+            Ast::Loop(x),
+            Ast::For(x),
+            Ast::While(x),
+            Ast::Defun(x),
+            Ast::FCall(x),*/
+            _ => "还没写完".to_string(),
         }
     }
 }
