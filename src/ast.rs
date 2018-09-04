@@ -87,10 +87,9 @@ impl ToString for Ast {
             Ast::Float(ref x) => "float: ".to_string() + &x.to_string(),
             Ast::String(ref x) => "string: ".to_string() + &x.to_string(),
             Ast::Symbol(ref x) => "symbol: ".to_string() + &x.to_string(),
+            Ast::Quote(ref x) => "quote: ".to_string() + &x.expr.to_string(),
             /*
-
             Ast::Tuple(x),
-            Ast::Quote(x),
             Ast::Cond(x),
             Ast::Match(x),
             Ast::Defun(x),
