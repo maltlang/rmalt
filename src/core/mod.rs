@@ -9,17 +9,15 @@ use value::_Tuple;
 use func::Call;
 use func::Function;
 use func::Native;
-use core::interpreter::InterpreterContext;
+use core::interpreter::ThreadContext;
 
 
 impl Call for Function {
-    fn call(&self, _ic: Arc<InterpreterContext>, _args: _Tuple) -> Value {
+    fn call(&self, _ic: Arc<ThreadContext>, _args: _Tuple) -> Value {
         Value::Nil
     }
 }
 
 impl Call for Native {
-    fn call(&self, ic: Arc<InterpreterContext>, args: _Tuple) -> Value {
-        (self.fp)(ic, args)
-    }
+    fn call(&self, ic: Arc<ThreadContext>, args: _Tuple) -> Value { (self.fp)(ic, args) }
 }

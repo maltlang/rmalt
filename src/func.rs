@@ -4,22 +4,22 @@ use value::_Tuple;
 use ast::Ast;
 use core::module;
 use core::interpreter::FunctionContext;
-use core::interpreter::InterpreterContext;
+use core::interpreter::ThreadContext;
 use std::sync::Weak;
 
 pub struct Function {
     pub modu: Weak<module::Module>,
     pub name: String,
-    pub env: Arc<FunctionContext>,
     pub expr: Ast,
+    pub env: Arc<FunctionContext>,
 }
 
 pub struct Native {
     pub name: String,
-    pub fp: fn(Arc<InterpreterContext>, _Tuple) -> Value,
+    pub fp: fn(Arc<ThreadContext>, _Tuple) -> Value,
 }
 
 pub trait Call {
-    fn call(&self, ic: Arc<InterpreterContext>, args: _Tuple) -> Value;
+    fn call(&self, ic: Arc<ThreadContext>, args: _Tuple) -> Value;
 }
 

@@ -68,11 +68,6 @@ pub enum Ast {
     Cond(Arc<CondAst>),
     Match(Arc<MatchAst>),
 
-    ///### 循环结构
-    Loop(Arc<LoopAst>),
-    For(Arc<ForAst>),
-    While(Arc<WhileAst>),
-
     ///## 函数相关
     Defun(Arc<DefunAst>),
     FCall(Arc<FCallAst>),
@@ -98,9 +93,6 @@ impl ToString for Ast {
             Ast::Quote(x),
             Ast::Cond(x),
             Ast::Match(x),
-            Ast::Loop(x),
-            Ast::For(x),
-            Ast::While(x),
             Ast::Defun(x),
             Ast::FCall(x),*/
             _ => "还没写完".to_string(),

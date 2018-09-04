@@ -3,6 +3,7 @@ use std::sync::Weak;
 use std::sync::Mutex;
 use std::cell::Cell;
 use std::collections::HashMap;
+use std::thread::Thread;
 use value::Value;
 use func::Function;
 use ast::Ast;
@@ -16,8 +17,9 @@ pub struct FunctionContext {
     pub next: Box<FunctionContext>,
 }
 
-pub struct ThrandContext {
+pub struct ThreadContext {
     pub ic: Weak<Mutex<InterpreterContext>>,
+    //pub th: Arc<Mutex<Thread>>,
     pub name: String,
     pub using_module: Weak<Mutex<module::Module>>,
     pub framestack: Cell<Box<FunctionContext>>,
