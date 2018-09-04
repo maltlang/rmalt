@@ -18,7 +18,7 @@ fn main() {
         if _tf.len() == 0 { continue; }
         let ast = parser::parser_once(&_tf, 0);
         match parser::parser_once(&_tf, 0) {
-            Ok((o, idx)) => println!("{}", o.to_string()),
+            Ok((o, idx)) => println!("{}, {}:{}", o.to_string(), o.pos.line, o.pos.col),
             Err(x) => eprintln!("SyntaxError {}:{}", &_tf[x].pos.line, &_tf[x].pos.col),
         }
     }
