@@ -54,6 +54,5 @@ fn parser_ex(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
     } else {
         return Err(idx-1);
     }
-
-    Err(0)
+    Err(idx)
 }
