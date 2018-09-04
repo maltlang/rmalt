@@ -91,7 +91,7 @@ impl Value {
             Value::Native(ref x) => "<native ".to_string() + &*x.name + ">",
             Value::Function(ref x) => "<function ".to_string() + &*x.name + ">",
             // 还没写好的
-            Value::Ast(_) => "ast".to_string(),
+            Value::Ast(ref x) => x.to_string(),
             Value::Dict(_) => "dict".to_string(),
             Value::Tuple(_) => "tuple".to_string(),
         }
