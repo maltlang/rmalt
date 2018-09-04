@@ -3,6 +3,7 @@ use value::Value;
 use value::_Str;
 use core::interpreter::InterpreterContext;
 use parser::token::TokenPos;
+use core::interpreter::ThreadContext;
 
 pub struct QuoteAst {
     pub expr: Ast,
@@ -17,7 +18,8 @@ pub struct CondAst {
 }
 
 pub struct MatchAst {
-    pub cval: Ast, // cond value
+    pub cval: Ast,
+    // cond value
     pub pair: Vec<(Ast, Ast)>,
 }
 
@@ -27,7 +29,8 @@ pub struct LoopAst {
 
 pub struct ForAst {
     pub name: String,
-    pub tuple: Ast, // cond value
+    pub tuple: Ast,
+    // cond value
     pub expr: Vec<Ast>,
 }
 
@@ -79,6 +82,36 @@ pub struct Ast {
     pub pos: TokenPos,
 }
 
+impl Clone for AstValue {
+    fn clone(&self) -> AstValue {
+        match self {
+            AstValue::Nil => AstValue::Nil,
+            AstValue::Bool(ref x) => AstValue::Bool(x.clone()),
+            AstValue::Char(ref x) => AstValue::Char(x.clone()),
+            AstValue::Int(ref x) => AstValue::Int(x.clone()),
+            AstValue::UInt(ref x) => AstValue::UInt(x.clone()),
+            AstValue::Float(ref x) => AstValue::Float(x.clone()),
+            AstValue::String(ref x) => AstValue::String(x.clone()),
+            AstValue::Symbol(ref x) => AstValue::Symbol(x.clone()),
+            AstValue::Tuple(ref x) => AstValue::Tuple(x.clone()),
+            AstValue::Quote(ref x) => AstValue::Quote(x.clone()),
+            AstValue::Cond(ref x) => AstValue::Cond(x.clone()),
+            AstValue::Match(ref x) => AstValue::Match(x.clone()),
+            AstValue::Defun(ref x) => AstValue::Defun(x.clone()),
+            AstValue::FCall(ref x) => AstValue::FCall(x.clone()),
+        }
+    }
+}
+
+impl Clone for Ast {
+    fn clone(&self) -> Ast {
+        Ast {
+            val: self.val.clone(),
+            pos: self.pos.clone(),
+        }
+    }
+}
+
 impl ToString for Ast {
     fn to_string(&self) -> String {
         match self.val {
@@ -105,11 +138,7 @@ impl ToString for Ast {
     }
 }
 
-trait Eval {
-    fn eval(&self, ic :Arc<InterpreterContext>) -> Value;
-}
-
 trait CodeGen {
     fn code_gen_to_rust(&self) -> String;
-    fn code_gen_to_dump(&self) -> Vec<u8>;
+    //fn code_gen_to_dump(&self) -> Vec<u8>;
 }

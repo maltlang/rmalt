@@ -23,7 +23,7 @@ pub fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usiz
             token::TokenValue::UINT(ref v) => Ok((Ast { val: AstValue::UInt(v.clone()), pos: x.pos.clone() }, idx + 1)),
             token::TokenValue::FLOAT(ref v) => Ok((Ast { val: AstValue::Float(v.clone()), pos: x.pos.clone() }, idx + 1)),
             token::TokenValue::STRING(ref v) => Ok((Ast { val: AstValue::String(v.clone()), pos: x.pos.clone() }, idx + 1)),
-            token::TokenValue::SYMBOL(ref v) => Ok((Ast { val: AstValue::String(v.clone()), pos: x.pos.clone() }, idx + 1)),
+            token::TokenValue::SYMBOL(ref v) => Ok((Ast { val: AstValue::Symbol(v.clone()), pos: x.pos.clone() }, idx + 1)),
             _ => parser_ex(tf, idx),
         }
         None => Err(idx - 1),
