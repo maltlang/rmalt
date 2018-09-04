@@ -44,7 +44,7 @@ pub enum Value {
 // value opertional tool functions
 impl Value {
     // is_atom(in stack)
-    fn is_atom(&self) -> bool {
+    pub fn is_atom(&self) -> bool {
         match self {
             Value::Nil |
             Value::Int(_) |
@@ -57,7 +57,7 @@ impl Value {
     }
 
     // get value type -> string
-    fn get_type(&self) -> String {
+    pub fn get_type(&self) -> String {
         match self {
             Value::Nil => "nil".to_string(),
             Value::Ast(_) => "ast".to_string(),
@@ -77,7 +77,7 @@ impl Value {
         }
     }
 
-    fn to_string(&self) -> String {
+    pub fn to_string(&self) -> String {
         match self {
             Value::Nil => "nil".to_string(),
             Value::Int(ref x) => x.to_string(),

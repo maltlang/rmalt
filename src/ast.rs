@@ -112,6 +112,18 @@ impl Clone for Ast {
     }
 }
 
+impl ToString for TupleAst {
+    fn to_string(&self) -> String {
+        let mut rs = String::from("[");
+        for i in &self.tuple {
+            rs += &i.to_string();
+            rs += " ";
+        }
+        rs.push(']');
+        rs
+    }
+}
+
 impl ToString for Ast {
     fn to_string(&self) -> String {
         match self.val {
@@ -127,8 +139,8 @@ impl ToString for Ast {
             AstValue::String(ref x) => "string: ".to_string() + &x.to_string(),
             AstValue::Symbol(ref x) => "symbol: ".to_string() + &x.to_string(),
             AstValue::Quote(ref x) => "quote: ".to_string() + &x.expr.to_string(),
+            AstValue::Tuple(ref x) => x.to_string(),
             /*
-            AstValue::Tuple(x),
             AstValue::Cond(x),
             AstValue::Match(x),
             AstValue::Defun(x),

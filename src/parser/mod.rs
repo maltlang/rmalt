@@ -16,6 +16,25 @@ pub mod lexer;
 // default : Symbol | String | UInt | Int | Float
 
 
+pub fn parser(tf: &[token::Token]) -> Result<Vec<Ast>, usize> {
+    if tf.len() == 0 {
+        return Ok(vec![]);
+    }
+    let mut rs: Vec<Ast> = vec![];
+    let mut sz: usize = 0;
+    loop {
+        if sz == tf.len() { break; }
+        match parser_once(tf, sz.clone()) {
+            Ok((ref x, ref i)) => {
+                sz = i.clone();
+                rs.push(x.clone());
+            }
+            Err(us) => return Err(us),
+        }
+    }
+    return Ok(rs);
+}
+
 pub fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
     match tf.get(idx) {
         Some(x) => match x.val {
@@ -26,7 +45,7 @@ pub fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usiz
             token::TokenValue::SYMBOL(ref v) => Ok((Ast { val: AstValue::Symbol(v.clone()), pos: x.pos.clone() }, idx + 1)),
             _ => parser_ex(tf, idx),
         }
-        None => Err(idx - 1),
+        None => Err(idx),
     }
 }
 
@@ -46,7 +65,7 @@ fn parser_ex(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
                         expr: oj.0
                     })),
                 pos: x.pos.clone(),
-            }, oj.1));
+            }, idx + 1));
         }
     } else {
         return Err(idx - 1);

@@ -16,9 +16,10 @@ fn main() {
         io::stdin().read_line(&mut input).unwrap();
         let _tf = parser::lexer::lexer(&input);
         if _tf.len() == 0 { continue; }
-        let ast = parser::parser_once(&_tf, 0);
-        match parser::parser_once(&_tf, 0) {
-            Ok((o, idx)) => println!("{}, {}:{}", o.to_string(), o.pos.line, o.pos.col),
+        match parser::parser(&_tf) {
+            Ok(ref o) => for ref i in o {
+                println!("Value {}: {}", i.eval().get_type(), i.eval().to_string());
+            }
             Err(x) => eprintln!("SyntaxError {}:{}", &_tf[x].pos.line, &_tf[x].pos.col),
         }
     }
