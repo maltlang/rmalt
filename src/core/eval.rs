@@ -14,12 +14,11 @@ impl Ast {
             AstValue::Int(ref x) => Value::Int(x.clone()),
             AstValue::UInt(ref x) => Value::UInt(x.clone()),
             AstValue::Float(ref x) => Value::Float(x.clone()),
-            AstValue::String(ref x) => Value::String(x.clone()), // FIXME:???
-            AstValue::Symbol(ref x) => Value::Symbol(x.clone()), // TODO:!!!
+            AstValue::String(ref x) => Value::String(x.clone()),
+            AstValue::Symbol(ref x) => Value::Symbol(x.clone()), // TODO:LoadName(x.clone()); //涉及到上下文，所以没得写
             AstValue::Quote(ref x) => Value::Ast(Arc::from(x.expr.clone())),
-            AstValue::Tuple(ref x) => Value::String(Arc::from(x.to_string())), // TODO:!!!
+            AstValue::Tuple(ref x) => Value::String(Arc::from(x.to_string())), // TODO:Value::Tuple(...) //懒
             /*
-            AstValue::Tuple(x),
             AstValue::Cond(x),
             AstValue::Match(x),
             AstValue::Defun(x),
