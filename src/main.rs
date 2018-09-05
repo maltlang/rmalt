@@ -18,7 +18,7 @@ fn main() {
         if _tf.len() == 0 { continue; }
         match parser::parser(&_tf) {
             Ok(ref o) => for ref i in o {
-                println!("Value {}: {}", i.eval().get_type(), i.eval().to_string());
+                println!("Ast: {}", i.to_string());
             }
             Err(x) => eprintln!("SyntaxError {}:{}", &_tf[x].pos.line, &_tf[x].pos.col),
         }

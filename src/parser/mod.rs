@@ -65,7 +65,7 @@ fn parser_ex(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
                         expr: oj.0
                     })),
                 pos: x.pos.clone(),
-            }, idx + 1));
+            }, idx + 2));
         }
     } else {
         return Err(idx - 1);
@@ -103,27 +103,37 @@ fn parser_ex(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
 
 fn parser_list_struct(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
     if let Some(x) = tf.get(idx) {
-        // other
-        // fcall
         if let token::TokenValue::LP = x.val {
-            let mut arr: Vec<Ast> = vec![];
-            let mut sz: usize = idx + 1;
-            loop {
-                if let token::TokenValue::RP = tf[sz].val { break; }
-                match parser_once(tf, sz) {
-                    Ok((o, i)) => {
-                        arr.push(o);
-                        sz = i;
+            if let Ok((o, i)) = parser_once(tf, idx + 1) {
+                if let AstValue::Symbol(x) = o.val {
+                    // 确认
+                    return Err(idx);
+                } else {
+                    // fcall
+                    let mut arr: Vec<Ast> = vec![];
+                    let mut sz: usize = idx + 1;
+                    loop {
+                        if sz == tf.len() { return Err(sz - 1); }
+                        if let token::TokenValue::RP = tf[sz].val { break; }
+                        match parser_once(tf, sz) {
+                            Ok((o, i)) => {
+                                arr.push(o);
+                                sz = i;
+                            }
+                            Err(x) => return Err(x),
+                        }
                     }
-                    Err(x) => return Err(x),
+                    return Ok((Ast {
+                        val: AstValue::FCall(Arc::new(FCallAst { list: arr })),
+                        pos: x.pos.clone(),
+                    }, sz + 1));
                 }
+            } else {
+                return Err(idx);
             }
-            return Ok((Ast {
-                val: AstValue::FCall(Arc::new(FCallAst { list: arr })),
-                pos: x.pos.clone(),
-            }, sz + 1));
+        } else {
+            return Err(idx);
         }
-        return Err(idx);
     } else {
         return Err(idx - 1);
     }
