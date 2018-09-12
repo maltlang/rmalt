@@ -62,7 +62,16 @@ fn parser_list(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
         if let Some(x) = tf.get(sz) {
             eprintln!("match )");
             if let token::TokenValue::RP = x.val {
-                break;
+                //break;
+                return Ok((
+                    Ast {
+                        val: AstValue::List(Arc::from(
+                            ListAst {
+                                list: list,
+                            })),
+                        pos: tf[idx].pos.clone(),
+                    },
+                    sz));
             }
             eprintln!("match ast");
             match parser_once(tf, sz) {
@@ -76,14 +85,5 @@ fn parser_list(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
             return Err(idx - 1);
         }
     }
-    return Ok((
-        Ast {
-            val: AstValue::List(Arc::from(
-                ListAst {
-                    list: list,
-                })),
-            pos: tf[idx].pos.clone(),
-        },
-        sz));
 }
 
