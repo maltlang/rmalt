@@ -5,6 +5,8 @@ use core::interpreter::InterpreterContext;
 use parser::token::TokenPos;
 use core::interpreter::ThreadContext;
 
+
+/*
 pub struct QuoteAst {
     pub expr: Ast,
 }
@@ -48,6 +50,11 @@ pub struct DefunAst {
 pub struct FCallAst {
     pub list: Vec<Ast>,
 }
+*/
+
+pub struct List {
+    pub list: Vec<Ast>,
+}
 
 pub enum AstValue {
     ///## 字面量
@@ -61,20 +68,21 @@ pub enum AstValue {
     String(_Str),
     Symbol(_Str),
 
+    List(Arc<List>),
+
+    /*
     ///### 元组
     Tuple(Arc<TupleAst>),
-
     ///### 引用
     Quote(Arc<QuoteAst>),
-
     ///## 控制结构
     ///### 分支结构
     Cond(Arc<CondAst>),
     Match(Arc<MatchAst>),
-
     ///## 函数相关
     Defun(Arc<DefunAst>),
     FCall(Arc<FCallAst>),
+    */
 }
 
 pub struct Ast {
@@ -93,12 +101,15 @@ impl Clone for AstValue {
             AstValue::Float(ref x) => AstValue::Float(x.clone()),
             AstValue::String(ref x) => AstValue::String(x.clone()),
             AstValue::Symbol(ref x) => AstValue::Symbol(x.clone()),
+            AstValue::List(ref x) => AstValue::List(x.clone()),
+            /*
             AstValue::Tuple(ref x) => AstValue::Tuple(x.clone()),
             AstValue::Quote(ref x) => AstValue::Quote(x.clone()),
             AstValue::Cond(ref x) => AstValue::Cond(x.clone()),
             AstValue::Match(ref x) => AstValue::Match(x.clone()),
             AstValue::Defun(ref x) => AstValue::Defun(x.clone()),
             AstValue::FCall(ref x) => AstValue::FCall(x.clone()),
+            */
         }
     }
 }
@@ -112,10 +123,11 @@ impl Clone for Ast {
     }
 }
 
-impl ToString for TupleAst {
+
+impl ToString for List {
     fn to_string(&self) -> String {
         let mut rs = String::from("[");
-        for i in &self.tuple {
+        for i in &self.list {
             rs += &i.to_string();
             rs += " ";
         }
@@ -123,6 +135,7 @@ impl ToString for TupleAst {
         rs
     }
 }
+
 
 impl ToString for Ast {
     fn to_string(&self) -> String {
@@ -138,9 +151,9 @@ impl ToString for Ast {
             AstValue::Float(ref x) => "float: ".to_string() + &x.to_string(),
             AstValue::String(ref x) => "string: ".to_string() + &x.to_string(),
             AstValue::Symbol(ref x) => "symbol: ".to_string() + &x.to_string(),
+            /*
             AstValue::Quote(ref x) => "quote: ".to_string() + &x.expr.to_string(),
             AstValue::Tuple(ref x) => x.to_string(),
-            /*
             AstValue::Cond(x),
             AstValue::Match(x),
             AstValue::Defun(x),

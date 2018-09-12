@@ -11,7 +11,7 @@ pub struct Function {
     pub modu: Weak<module::Module>,
     pub name: String,
     pub expr: Ast,
-    pub env: Arc<FunctionContext>,
+    pub env: Option<Arc<FunctionContext>>,
 }
 
 pub struct Native {

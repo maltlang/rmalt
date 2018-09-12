@@ -3,9 +3,9 @@ use std::sync::Arc;
 pub enum TokenValue {
     LP,
     RP,
-    LMP,
-    RMP,
-    QUO,
+    //LMP,
+    //RMP,
+    //QUO,
 
     INT(i64),
     UINT(u64),
@@ -31,9 +31,9 @@ impl Clone for TokenValue {
         match self {
             TokenValue::LP => TokenValue::LP,
             TokenValue::RP => TokenValue::RP,
-            TokenValue::LMP => TokenValue::LMP,
-            TokenValue::RMP => TokenValue::RMP,
-            TokenValue::QUO => TokenValue::QUO,
+            //TokenValue::LMP => TokenValue::LMP,
+            //TokenValue::RMP => TokenValue::RMP,
+            //TokenValue::QUO => TokenValue::QUO,
             TokenValue::INT(x) => TokenValue::INT(x.clone()),
             TokenValue::UINT(x) => TokenValue::UINT(x.clone()),
             TokenValue::FLOAT(x) => TokenValue::FLOAT(x.clone()),
@@ -66,9 +66,9 @@ impl ToString for Token {
         match self.val {
             TokenValue::LP => s.push('('),
             TokenValue::RP => s.push(')'),
-            TokenValue::LMP => s.push('['),
-            TokenValue::RMP => s.push(']'),
-            TokenValue::QUO => s.push('\''),
+            //TokenValue::LMP => s.push('['),
+            //TokenValue::RMP => s.push(']'),
+            //TokenValue::QUO => s.push('\''),
             TokenValue::INT(ref x) => {
                 s.push_str("int ");
                 s.push_str(&x.to_string());

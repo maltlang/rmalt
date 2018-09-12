@@ -1,0 +1,32 @@
+[Runtime]
+
+ThreadContext {
+    InterpreterContext,
+    FunctionContext,
+    Module,
+}
+
+InterpreterContext {
+    Module,
+}
+
+FunctionContext {
+    Function,
+    Ast,
+    FunctionContext,
+    'String,
+    'VarTable,
+}
+
+Module {
+    'String,
+    Ast,
+    'VarTable,
+}
+
+Function {
+    Module,
+    'String,
+    Ast,
+    FunctionContext,
+}

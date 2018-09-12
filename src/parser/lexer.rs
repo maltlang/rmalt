@@ -6,7 +6,7 @@ use parser::token::Token;
 use std::sync::Arc;
 
 //use regex::Regex;
-use self::regex::Regex;
+//use self::regex::Regex;
 
 enum Mode {
     CODE,
@@ -120,7 +120,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                             },
                         });
                     }
-                    '[' => {
+                    /*'[' => {
                         if (*strbuf).len() > 0 {
                             rs.push(Token {
                                 val: other_get(&strbuf),
@@ -171,6 +171,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                             },
                         });
                     }
+                    */
                     '\"' => {
                         if (*strbuf).len() > 0 {
                             rs.push(Token {
