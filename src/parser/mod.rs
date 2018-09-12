@@ -49,7 +49,6 @@ pub fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usiz
 #[inline]
 fn parser_list(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
     // 因为 parser once有检测第一个item的match，所以这里不用检测
-    eprintln!("match (");
     match tf[idx].val {
         token::TokenValue::LP => {}
         _ => {
@@ -60,7 +59,6 @@ fn parser_list(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
     let mut list: Vec<ast::Ast> = vec![];
     loop {
         if let Some(x) = tf.get(sz) {
-            eprintln!("match )");
             if let token::TokenValue::RP = x.val {
                 //break;
                 return Ok((
@@ -73,7 +71,6 @@ fn parser_list(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
                     },
                     sz));
             }
-            eprintln!("match ast");
             match parser_once(tf, sz) {
                 Ok((o, i)) => {
                     list.push(o);
