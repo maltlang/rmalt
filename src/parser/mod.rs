@@ -1,6 +1,9 @@
 use ast::Ast;
 use std::sync::Arc;
 use ast::AstValue;
+use ast;
+use std::prelude::v1::Vec;
+use ast::ListAst;
 /*
 use ast::TupleAst;
 use ast::QuoteAst;
@@ -17,11 +20,11 @@ pub fn parser(tf: &[token::Token]) -> Result<Vec<Ast>, usize> {
     let mut rs: Vec<Ast> = vec![];
     let mut sz: usize = 0;
     loop {
-        if sz == tf.len() { break; }
-        match parser_once(tf, sz.clone()) {
-            Ok((ref x, ref i)) => {
-                sz = i.clone();
-                rs.push(x.clone());
+        if sz >= tf.len() { break; }
+        match parser_once(tf, sz) {
+            Ok((x, i)) => {
+                sz = i + 1;
+                rs.push(x);
             }
             Err(us) => return Err(us),
         }
@@ -32,11 +35,11 @@ pub fn parser(tf: &[token::Token]) -> Result<Vec<Ast>, usize> {
 pub fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
     match tf.get(idx) {
         Some(x) => match x.val {
-            token::TokenValue::INT(ref v) => Ok((Ast { val: AstValue::Int(v.clone()), pos: x.pos.clone() }, idx + 1)),
-            token::TokenValue::UINT(ref v) => Ok((Ast { val: AstValue::UInt(v.clone()), pos: x.pos.clone() }, idx + 1)),
-            token::TokenValue::FLOAT(ref v) => Ok((Ast { val: AstValue::Float(v.clone()), pos: x.pos.clone() }, idx + 1)),
-            token::TokenValue::STRING(ref v) => Ok((Ast { val: AstValue::String(v.clone()), pos: x.pos.clone() }, idx + 1)),
-            token::TokenValue::SYMBOL(ref v) => Ok((Ast { val: AstValue::Symbol(v.clone()), pos: x.pos.clone() }, idx + 1)),
+            token::TokenValue::INT(ref v) => Ok((Ast { val: AstValue::Int(v.clone()), pos: x.pos.clone() }, idx)),
+            token::TokenValue::UINT(ref v) => Ok((Ast { val: AstValue::UInt(v.clone()), pos: x.pos.clone() }, idx)),
+            token::TokenValue::FLOAT(ref v) => Ok((Ast { val: AstValue::Float(v.clone()), pos: x.pos.clone() }, idx)),
+            token::TokenValue::STRING(ref v) => Ok((Ast { val: AstValue::String(v.clone()), pos: x.pos.clone() }, idx)),
+            token::TokenValue::SYMBOL(ref v) => Ok((Ast { val: AstValue::Symbol(v.clone()), pos: x.pos.clone() }, idx)),
             _ => parser_list(tf, idx),
         }
         None => Err(idx),
@@ -45,5 +48,42 @@ pub fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usiz
 
 #[inline]
 fn parser_list(tf: &[token::Token], idx: usize) -> Result<(Ast, usize), usize> {
-    Err(idx)
+    // 因为 parser once有检测第一个item的match，所以这里不用检测
+    eprintln!("match (");
+    match tf[idx].val {
+        token::TokenValue::LP => {}
+        _ => {
+            return Err(idx);
+        }
+    }
+    let mut sz: usize = idx + 1;
+    let mut list: Vec<ast::Ast> = vec![];
+    loop {
+        if let Some(x) = tf.get(sz) {
+            eprintln!("match )");
+            if let token::TokenValue::RP = x.val {
+                break;
+            }
+            eprintln!("match ast");
+            match parser_once(tf, sz) {
+                Ok((o, i)) => {
+                    list.push(o);
+                    sz = i + 1;
+                }
+                Err(e) => return Err(e),
+            }
+        } else {
+            return Err(idx - 1);
+        }
+    }
+    return Ok((
+        Ast {
+            val: AstValue::List(Arc::from(
+                ListAst {
+                    list: list,
+                })),
+            pos: tf[idx].pos.clone(),
+        },
+        sz));
 }
+

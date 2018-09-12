@@ -52,7 +52,7 @@ pub struct FCallAst {
 }
 */
 
-pub struct List {
+pub struct ListAst {
     pub list: Vec<Ast>,
 }
 
@@ -68,7 +68,7 @@ pub enum AstValue {
     String(_Str),
     Symbol(_Str),
 
-    List(Arc<List>),
+    List(Arc<ListAst>),
 
     /*
     ///### 元组
@@ -124,7 +124,7 @@ impl Clone for Ast {
 }
 
 
-impl ToString for List {
+impl ToString for ListAst {
     fn to_string(&self) -> String {
         let mut rs = String::from("[");
         for i in &self.list {
