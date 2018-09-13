@@ -60,7 +60,7 @@ pub enum AstValue {
     ///## 字面量
     Nil,
     Bool(bool),
-    Char(char),
+    //Char(char),
     Int(i64),
     UInt(u64),
     Float(f64),
@@ -95,7 +95,7 @@ impl Clone for AstValue {
         match self {
             AstValue::Nil => AstValue::Nil,
             AstValue::Bool(ref x) => AstValue::Bool(x.clone()),
-            AstValue::Char(ref x) => AstValue::Char(x.clone()),
+            //AstValue::Char(ref x) => AstValue::Char(x.clone()),
             AstValue::Int(ref x) => AstValue::Int(x.clone()),
             AstValue::UInt(ref x) => AstValue::UInt(x.clone()),
             AstValue::Float(ref x) => AstValue::Float(x.clone()),
@@ -126,12 +126,12 @@ impl Clone for Ast {
 
 impl ToString for ListAst {
     fn to_string(&self) -> String {
-        let mut rs = String::from("[");
+        let mut rs = String::from("(");
         for i in &self.list {
             rs += &i.to_string();
-            rs += " ";
+            rs += ", ";
         }
-        rs.push(']');
+        rs.push(')');
         rs
     }
 }
@@ -142,15 +142,16 @@ impl ToString for Ast {
         match self.val {
             AstValue::Nil => "nil".to_string(),
             AstValue::Bool(ref x) => match x {
-                true => "bool: true".to_string(),
-                false => "bool: false".to_string(),
+                true => "true".to_string(),
+                false => "false".to_string(),
             },
-            AstValue::Char(ref x) => "char: ".to_string() + &x.to_string(),
-            AstValue::Int(ref x) => "int: ".to_string() + &x.to_string(),
-            AstValue::UInt(ref x) => "uint: ".to_string() + &x.to_string(),
-            AstValue::Float(ref x) => "float: ".to_string() + &x.to_string(),
-            AstValue::String(ref x) => "string: ".to_string() + &x.to_string(),
-            AstValue::Symbol(ref x) => "symbol: ".to_string() + &x.to_string(),
+            //AstValue::Char(ref x) => x.to_string(),
+            AstValue::Int(ref x) => x.to_string(),
+            AstValue::UInt(ref x) => x.to_string(),
+            AstValue::Float(ref x) => x.to_string(),
+            AstValue::String(ref x) => x.to_string(),
+            AstValue::Symbol(ref x) => x.to_string(),
+            AstValue::List(ref x) => x.to_string(),
             /*
             AstValue::Quote(ref x) => "quote: ".to_string() + &x.expr.to_string(),
             AstValue::Tuple(ref x) => x.to_string(),

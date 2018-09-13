@@ -10,7 +10,7 @@ impl Ast {
         match self.val {
             AstValue::Nil => Value::Nil,
             AstValue::Bool(ref x) => Value::Bool(x.clone()),
-            AstValue::Char(ref x) => Value::Char(x.clone()),
+            //AstValue::Char(ref x) => Value::Char(x.clone()),
             AstValue::Int(ref x) => Value::Int(x.clone()),
             AstValue::UInt(ref x) => Value::UInt(x.clone()),
             AstValue::Float(ref x) => Value::Float(x.clone()),
