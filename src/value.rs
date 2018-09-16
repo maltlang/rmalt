@@ -77,7 +77,7 @@ pub enum Value {
 
     // macros
     Macro(_Function),
-    BaseMacro(_BaseMacro),
+    BaseMacro(_NativeMacro),
 }
 
 

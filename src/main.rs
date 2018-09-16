@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 pub mod value;
-pub mod ast;
+//pub mod ast;
 pub mod func;
 pub mod core;
-pub mod mmacro;
+//pub mod mmacro;
 pub mod parser;
 
 

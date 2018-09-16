@@ -3,10 +3,10 @@ use std::sync::Arc;
 pub enum TokenValue {
     LP,
     RP,
-    //LMP,
-    //RMP,
-    //QUO,
-
+    LMP,
+    RMP,
+    QUO,
+    EVL,
     INT(i64),
     UINT(u64),
     FLOAT(f64),

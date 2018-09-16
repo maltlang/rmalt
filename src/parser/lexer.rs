@@ -120,7 +120,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                             },
                         });
                     }
-                    /*'[' => {
+                    '[' => {
                         if (*strbuf).len() > 0 {
                             rs.push(Token {
                                 val: other_get(&strbuf),
@@ -171,7 +171,23 @@ pub fn lexer(s: &str) -> Vec<Token> {
                             },
                         });
                     }
-                    */
+                    '`' => {
+                        if (*strbuf).len() > 0 {
+                            rs.push(Token {
+                                val: other_get(&strbuf),
+                                pos: strpos,
+                            });
+                            strpos = TokenPos { line: 0, col: 0 };
+                            strbuf.clear();
+                        };
+                        rs.push(Token {
+                            val: TokenValue::EVL,
+                            pos: TokenPos {
+                                line,
+                                col,
+                            },
+                        });
+                    }
                     '\"' => {
                         if (*strbuf).len() > 0 {
                             rs.push(Token {

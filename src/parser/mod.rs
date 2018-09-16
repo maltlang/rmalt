@@ -13,6 +13,8 @@ use ast::FCallAst;
 pub mod token;
 pub mod lexer;
 
+//TODO:全部推倒重来！
+
 pub fn parser(tf: &[token::Token]) -> Result<Vec<Ast>, usize> {
     if tf.len() == 0 {
         return Ok(vec![]);
