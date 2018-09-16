@@ -18,8 +18,8 @@ fn main() {
         let _tf = parser::lexer::lexer(&input);
         if _tf.len() == 0 { continue; }
         match parser::parser(&_tf) {
-            Ok(ref o) => for i in o {
-                println!("Value: {}", i.to_value().to_string());
+            Ok(ref o) => for ref i in o {
+                println!("Ast: {}", i.to_string());
             }
             Err(x) => eprintln!("SyntaxError {}:{}", &_tf[x].pos.line, &_tf[x].pos.col),
         }

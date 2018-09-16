@@ -14,7 +14,7 @@ pub struct FunctionContext {
     pub fp: Arc<Function>,
     pub ap: Weak<Ast>,
     pub vartable: Cell<HashMap<String, Value>>,
-    pub next: Box<FunctionContext>,
+    pub next: Arc<FunctionContext>,
 }
 
 pub struct ThreadContext {
@@ -22,7 +22,7 @@ pub struct ThreadContext {
     //pub th: Arc<Mutex<Thread>>,
     pub name: String,
     pub using_module: Arc<module::Module>,
-    pub framestack: Cell<Box<FunctionContext>>,
+    pub framestack: Cell<Arc<FunctionContext>>,
 }
 
 pub struct InterpreterContext {

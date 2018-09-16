@@ -6,59 +6,13 @@ use parser::token::TokenPos;
 use core::interpreter::ThreadContext;
 
 
-/*
-pub struct QuoteAst {
-    pub expr: Ast,
-}
-
-pub struct TupleAst {
-    pub tuple: Vec<Ast>,
-}
-
-pub struct CondAst {
-    pub pair: Vec<(Ast, Ast)>,
-}
-
-pub struct MatchAst {
-    pub cval: Ast,
-    // cond value
-    pub pair: Vec<(Ast, Ast)>,
-}
-
-pub struct LoopAst {
-    pub expr: Vec<Ast>,
-}
-
-pub struct ForAst {
-    pub name: String,
-    pub tuple: Ast,
-    // cond value
-    pub expr: Vec<Ast>,
-}
-
-pub struct WhileAst {
-    pub cond: Ast,
-    pub expr: Vec<Ast>,
-}
-
-pub struct DefunAst {
-    pub name: String,
-    pub args: Vec<String>,
-    pub expr: Vec<Ast>,
-}
-
-pub struct FCallAst {
-    pub list: Vec<Ast>,
-}
-*/
-
 pub struct ListAst {
     pub list: Vec<Ast>,
 }
 
 pub enum AstValue {
     ///## 字面量
-    Nil,
+    //Nil,
     Bool(bool),
     //Char(char),
     Int(i64),
@@ -69,20 +23,6 @@ pub enum AstValue {
     Symbol(_Str),
 
     List(Arc<ListAst>),
-
-    /*
-    ///### 元组
-    Tuple(Arc<TupleAst>),
-    ///### 引用
-    Quote(Arc<QuoteAst>),
-    ///## 控制结构
-    ///### 分支结构
-    Cond(Arc<CondAst>),
-    Match(Arc<MatchAst>),
-    ///## 函数相关
-    Defun(Arc<DefunAst>),
-    FCall(Arc<FCallAst>),
-    */
 }
 
 pub struct Ast {
@@ -93,7 +33,7 @@ pub struct Ast {
 impl Clone for AstValue {
     fn clone(&self) -> AstValue {
         match self {
-            AstValue::Nil => AstValue::Nil,
+            //AstValue::Nil => AstValue::Nil,
             AstValue::Bool(ref x) => AstValue::Bool(x.clone()),
             //AstValue::Char(ref x) => AstValue::Char(x.clone()),
             AstValue::Int(ref x) => AstValue::Int(x.clone()),
@@ -140,7 +80,7 @@ impl ToString for ListAst {
 impl ToString for Ast {
     fn to_string(&self) -> String {
         match self.val {
-            AstValue::Nil => "nil".to_string(),
+            //AstValue::Nil => "nil".to_string(),
             AstValue::Bool(ref x) => match x {
                 true => "true".to_string(),
                 false => "false".to_string(),

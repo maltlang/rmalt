@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use ast::Ast;
 use func::Function;
 use func::Native;
+use mmacro::BaseMacro;
 
 ///## 类型重命名
 pub type Handle<T> = Arc<T>;
@@ -12,6 +13,7 @@ pub type _Dict = Handle<HashMap<String, Value>>;
 pub type _Ast = Handle<Ast>;
 pub type _Function = Handle<Function>;
 pub type _Native = Handle<Native>;
+pub type _BaseMacro = Handle<BaseMacro>;
 
 pub type _List = Handle<LList>;
 
@@ -50,7 +52,6 @@ impl LList {
 pub enum Value {
     // atom
     Nil,
-    Any,
     Bool(bool),
     Char(char),
     Int(i64),
@@ -74,7 +75,7 @@ pub enum Value {
 
     // macros
     Macro(_Function),
-    BaseMacro(_Native),
+    BaseMacro(_BaseMacro),
 }
 
 
@@ -82,7 +83,6 @@ impl ToString for Value {
     fn to_string(&self) -> String {
         match self {
             Value::Nil => "nil".to_string(),
-            Value::Any => "any".to_string(),
             Value::Int(ref x) => x.to_string(),
             Value::UInt(ref x) => x.to_string(),
             Value::Bool(ref x) => x.to_string(),
@@ -110,7 +110,6 @@ impl Value {
     pub fn is_atom(&self) -> bool {
         match self {
             Value::Nil |
-            Value::Any |
             Value::Int(_) |
             Value::UInt(_) |
             Value::Bool(_) |
@@ -124,7 +123,6 @@ impl Value {
     pub fn get_type(&self) -> String {
         match self {
             Value::Nil => "nil".to_string(),
-            Value::Any => "any".to_string(),
             //Value::Ast(_) => "ast".to_string(),
             Value::Int(_) => "int".to_string(),
             Value::UInt(_) => "uint".to_string(),

@@ -16,10 +16,10 @@ pub struct Function {
 
 pub struct Native {
     pub name: String,
-    pub fp: fn(Arc<ThreadContext>, _Tuple) -> Value,
+    pub fp: fn(&Arc<ThreadContext>, _Tuple) -> Value,
 }
 
 pub trait Call {
-    fn call(&self, ic: Arc<ThreadContext>, args: _Tuple) -> Value;
+    fn call(&self, ic: &Arc<ThreadContext>, args: _Tuple) -> Value;
 }
 

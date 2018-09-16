@@ -1,16 +1,16 @@
+use std::sync::Arc;
+use ast::Ast;
+use value::Value;
+use core::interpreter::ThreadContext;
 
-pub struct Function {
-    pub modu: Weak<module::Module>,
+pub struct BaseMacro {
     pub name: String,
-    pub expr: Ast,
-    pub env: Option<Arc<FunctionContext>>,
+    pub fp: fn(&Arc<ThreadContext>, Vec<Ast>) -> Value,
 }
 
-pub struct Native {
-    pub name: String,
-    pub fp: fn(Arc<ThreadContext>, _Tuple) -> Value,
-}
 
-pub trait Call {
-    fn call(&self, ic: Arc<ThreadContext>, args: _Tuple) -> Value;
+impl BaseMacro {
+    pub fn unfold(&self, ic: &Arc<ThreadContext>, args: Vec<Ast>) -> Value {
+        (self.fp)(ic, args)
+    }
 }
