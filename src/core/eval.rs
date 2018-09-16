@@ -4,6 +4,78 @@ use core::interpreter::ThreadContext;
 use value::Value;
 use ast::AstValue;
 use func::Call;
+use value::Eval;
+
+
+impl Eval for Value {
+    fn eval(&self, ic: &Arc<ThreadContext>) -> Value {
+        match self {
+            Value::Tuple(ref x) => {
+                // tag
+                // 判断长度，长度为零直接扔
+                if x.len() == 0 {
+                    return Value::Nil;
+                } else {
+                    // 判断类型，用很垃圾的tag
+                    let mut is_macro = '\0'; // 'm' 'b' 'f'
+                    let first_object = x[0].eval(ic);
+                    match first_object {
+                        Value::Macro(_) => is_macro = 'm',
+                        Value::BaseMacro(_) => is_macro = 'b',
+                        Value::Native(_) |
+                        Value::Function(_) => is_macro = 'f',
+                        _ => {
+                            //tOdO: print stackframe info
+                            eprintln!("stackframe info ...");
+                            eprintln!("line pos info ...");
+                            eprintln!("***Error: Invalid call expression")
+                        }
+                    }
+                    // 根据各种情况处理
+                    if is_macro == 'b' {
+                        let mut a: Vec<Ast> = vec![];
+                        for (i, o) in x.iter().enumerate() {
+                            if i != 0 {
+                                a.push(o.clone());
+                            }
+                        }
+                        match first_object {
+                            Value::BaseMacro(x) => x.unfold(ic, a),
+                            _ => Value::Nil,
+                        }
+                    } else if is_macro == 'm' {
+                        let mut a: Vec<Value> = vec![];
+                        for (i, o) in x.list.iter().enumerate() {
+                            if i != 0 {
+                                a.push(o.to_value());
+                            }
+                        }
+                        match first_object {
+                            Value::Macro(x) => x.call(ic, Arc::from(a)),
+                            _ => Value::Nil,
+                        }
+                    } else //if is_macro == 'f'
+                    {
+                        let mut a: Vec<Value> = vec![];
+                        for (i, o) in x.list.iter().enumerate() {
+                            if i != 0 {
+                                a.push(o.eval(ic));
+                            }
+                        }
+                        match first_object {
+                            Value::Function(x) => x.call(ic, Arc::from(a)),
+                            Value::Native(x) => x.call(ic, Arc::from(a)),
+                            // 从逻辑上来说不会触发这一步，上同
+                            _ => Value::Nil,
+                        }
+                    }
+                }
+                // tag
+            },
+            _ => *self,
+        }
+    }
+}
 
 impl Ast {
     // 相当于quote
@@ -92,7 +164,6 @@ impl Ast {
                         }
                     }
                 }
-                //return Value::Nil;//todo:delete
             }
             // 正常返回（嘛耶)
             _ => self.to_value(),

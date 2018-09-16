@@ -4,6 +4,7 @@ use ast::Ast;
 use func::Function;
 use func::Native;
 use mmacro::BaseMacro;
+use core::interpreter::ThreadContext;
 
 ///## 类型重命名
 pub type Handle<T> = Arc<T>;
@@ -23,6 +24,7 @@ pub struct LList {
     cdr: Option<_List>,
 }
 
+/*
 impl LList {
     fn new() -> LList {
         LList {
@@ -46,7 +48,7 @@ impl LList {
         }
     }
 }
-
+*/
 
 ///## Value union
 pub enum Value {
@@ -97,7 +99,7 @@ impl ToString for Value {
             Value::BaseMacro(ref x) => "<base-macro ".to_string() + &*x.name + ">",
             // 还没写好的
             //Value::Ast(ref x) => x.to_string(),
-            Value::List(_) => "<list>".to_string(),
+            //Value::List(_) => "<list>".to_string(),
             Value::Dict(_) => "<dict>".to_string(),
             Value::Tuple(ref x) => "<tuple>".to_string(),
         }
@@ -142,4 +144,9 @@ impl Value {
             // Value::Native(_) => Some("<native>".to_string()),
         }
     }
+}
+
+pub trait Eval {
+    // 慎用，这玩意会把list当成调用来搞
+    fn eval(&self, ic: &Arc<ThreadContext>) -> Value;
 }
