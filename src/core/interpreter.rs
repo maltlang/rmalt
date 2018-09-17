@@ -6,13 +6,12 @@ use std::collections::HashMap;
 use std::thread::Thread;
 use value::Value;
 use func::Function;
-use ast::Ast;
 use core::module;
 
 
 pub struct FunctionContext {
     pub fp: Arc<Function>,
-    pub ap: Weak<Ast>,
+    pub ap: Value,
     pub vartable: Cell<HashMap<String, Value>>,
     pub next: Arc<FunctionContext>,
 }

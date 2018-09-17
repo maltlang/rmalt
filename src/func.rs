@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use value::Value;
 use value::_Tuple;
-use ast::Ast;
 use core::module;
 use core::interpreter::FunctionContext;
 use core::interpreter::ThreadContext;
@@ -10,7 +9,7 @@ use std::sync::Weak;
 pub struct Function {
     pub modu: Weak<module::Module>,
     pub name: String,
-    pub expr: Ast,
+    pub expr: Vec<Value>,
     pub env: Option<Arc<FunctionContext>>,
 }
 

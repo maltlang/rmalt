@@ -31,9 +31,10 @@ impl Clone for TokenValue {
         match self {
             TokenValue::LP => TokenValue::LP,
             TokenValue::RP => TokenValue::RP,
-            //TokenValue::LMP => TokenValue::LMP,
-            //TokenValue::RMP => TokenValue::RMP,
-            //TokenValue::QUO => TokenValue::QUO,
+            TokenValue::LMP => TokenValue::LMP,
+            TokenValue::RMP => TokenValue::RMP,
+            TokenValue::QUO => TokenValue::QUO,
+            TokenValue::EVL => TokenValue::EVL,
             TokenValue::INT(x) => TokenValue::INT(x.clone()),
             TokenValue::UINT(x) => TokenValue::UINT(x.clone()),
             TokenValue::FLOAT(x) => TokenValue::FLOAT(x.clone()),
@@ -66,9 +67,10 @@ impl ToString for Token {
         match self.val {
             TokenValue::LP => s.push('('),
             TokenValue::RP => s.push(')'),
-            //TokenValue::LMP => s.push('['),
-            //TokenValue::RMP => s.push(']'),
-            //TokenValue::QUO => s.push('\''),
+            TokenValue::LMP => s.push('['),
+            TokenValue::RMP => s.push(']'),
+            TokenValue::QUO => s.push('\''),
+            TokenValue::EVL => s.push('`'),
             TokenValue::INT(ref x) => {
                 s.push_str("int ");
                 s.push_str(&x.to_string());

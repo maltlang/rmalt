@@ -1,9 +1,7 @@
 use std::sync::Arc;
 use std::collections::HashMap;
-use ast::Ast;
 use func::Function;
 use func::Native;
-use mmacro::BaseMacro;
 use core::interpreter::ThreadContext;
 
 ///## 类型重命名
@@ -11,10 +9,8 @@ pub type Handle<T> = Arc<T>;
 pub type _Str = Handle<String>;
 pub type _Tuple = Handle<Vec<Value>>;
 pub type _Dict = Handle<HashMap<String, Value>>;
-pub type _Ast = Handle<Ast>;
 pub type _Function = Handle<Function>;
 pub type _Native = Handle<Native>;
-pub type _BaseMacro = Handle<BaseMacro>;
 
 pub type _List = Handle<LList>;
 
@@ -61,23 +57,19 @@ pub enum Value {
     Float(f64),
 
     // Heap Objects
-
     Symbol(_Str),
     String(_Str),
     Tuple(_Tuple),
-    List(_List),
+    //List(_List),
     Dict(_Dict),
     Object(_Dict),
-
-    // Ast(_Ast),
 
     // functions
     Function(_Function),
     Native(_Native),
-
     // macros
     Macro(_Function),
-    BaseMacro(_NativeMacro),
+    BaseMacro(_Native),
 }
 
 
@@ -130,7 +122,7 @@ impl Value {
             Value::UInt(_) => "uint".to_string(),
             Value::Bool(_) => "bool".to_string(),
             Value::Char(_) => "char".to_string(),
-            Value::List(_) => "list".to_string(),
+            //Value::List(_) => "list".to_string(),
             Value::Dict(_) => "dict".to_string(),
             Value::Float(_) => "float".to_string(),
             Value::Tuple(_) => "tuple".to_string(),
