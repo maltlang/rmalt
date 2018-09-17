@@ -4,7 +4,17 @@ use value::Value;
 pub mod token;
 pub mod lexer;
 
-pub fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (usize, String)> {
+pub fn parser(src: String) -> Result<(Vec<Value>, usize), (usize, String)> {
+    // toDo:
+    return Err((0, "".to_string()));
+}
+
+fn raw_parser(tf: &[token::Token], idx: usize) -> Result<(Vec<Value>, usize), (usize, String)> {
+    // tOdO:
+    return Err((0, "".to_string()));
+}
+
+fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (usize, String)> {
     if let Some(ref x) = tf.get(idx) {
         match x.val {
             token::TokenValue::INT(ref y) => {
@@ -32,8 +42,12 @@ pub fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (u
                     Value::Symbol(y.clone()),
                     idx + 1));
             }
-            token::TokenValue::QUO => {}
-            token::TokenValue::EVL => {}
+            token::TokenValue::QUO => {
+                //TODO:
+            }
+            token::TokenValue::EVL => {
+                //todo:
+            }
             token::TokenValue::LMP => {}
             token::TokenValue::LP => {}
             _ => {
