@@ -12,6 +12,7 @@ pub type _Dict = Handle<HashMap<String, Value>>;
 pub type _Function = Handle<Function>;
 pub type _Native = Handle<Native>;
 
+/*
 pub type _List = Handle<LList>;
 
 pub struct LList {
@@ -20,7 +21,6 @@ pub struct LList {
     cdr: Option<_List>,
 }
 
-/*
 impl LList {
     fn new() -> LList {
         LList {
@@ -45,6 +45,7 @@ impl LList {
     }
 }
 */
+
 
 ///## Value union
 pub enum Value {
@@ -93,7 +94,7 @@ impl ToString for Value {
             //Value::Ast(ref x) => x.to_string(),
             //Value::List(_) => "<list>".to_string(),
             Value::Dict(_) => "<dict>".to_string(),
-            Value::Tuple(ref x) => "<tuple>".to_string(),
+            Value::Tuple(ref _x) => "<tuple>".to_string(),
         }
     }
 }

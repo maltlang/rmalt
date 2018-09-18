@@ -1,9 +1,8 @@
 use std::sync::Arc;
-use std::sync::Weak;
+//use std::sync::Weak;
 use std::sync::Mutex;
 use std::cell::Cell;
 use std::collections::HashMap;
-use std::thread::Thread;
 use value::Value;
 use func::Function;
 use core::module;
