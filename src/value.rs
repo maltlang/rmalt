@@ -3,6 +3,9 @@ use std::collections::HashMap;
 use func::Function;
 use func::Native;
 use core::interpreter::ThreadContext;
+use std::cell::Cell;
+//use std::sync::Mutex;
+use std::sync::RwLock;
 
 ///## 类型重命名
 pub type Handle<T> = Arc<T>;
@@ -11,6 +14,7 @@ pub type _Tuple = Handle<Vec<Value>>;
 pub type _Dict = Handle<HashMap<String, Value>>;
 pub type _Function = Handle<Function>;
 pub type _Native = Handle<Native>;
+pub type _MutValue = Handle<RwLock<Cell<Value>>>;
 
 /*
 pub type _List = Handle<LList>;
@@ -56,7 +60,6 @@ pub enum Value {
     Int(i64),
     UInt(u64),
     Float(f64),
-
     // Heap Objects
     Symbol(_Str),
     String(_Str),
@@ -64,13 +67,14 @@ pub enum Value {
     //List(_List),
     Dict(_Dict),
     Object(_Dict),
-
     // functions
     Function(_Function),
     Native(_Native),
     // macros
     Macro(_Function),
     BaseMacro(_Native),
+    // 可变对象
+    Mut(_MutValue),
 }
 
 
@@ -78,6 +82,7 @@ impl ToString for Value {
     fn to_string(&self) -> String {
         match self {
             Value::Nil => "nil".to_string(),
+            Value::Mut(_) => "<Mut>".to_string(),
             Value::Int(ref x) => x.to_string(),
             Value::UInt(ref x) => x.to_string(),
             Value::Bool(ref x) => x.to_string(),
@@ -91,7 +96,6 @@ impl ToString for Value {
             Value::Function(ref x) => "<function ".to_string() + &*x.name + ">",
             Value::BaseMacro(ref x) => "<base-macro ".to_string() + &*x.name + ">",
             // 还没写好的
-            //Value::Ast(ref x) => x.to_string(),
             //Value::List(_) => "<list>".to_string(),
             Value::Dict(_) => "<dict>".to_string(),
             Value::Tuple(ref _x) => "<tuple>".to_string(),
@@ -135,6 +139,14 @@ impl Value {
             Value::Macro(_) |
             Value::BaseMacro(_) => "macro".to_string(),
             // Value::Native(_) => Some("<native>".to_string()),
+            Value::Mut(_) => "mut".to_string(), // fixMe: 这个要重写，调用value.get_type（mut不是类型，是属性）
+        }
+    }
+
+    pub fn is_mut(&self) -> bool {
+        match self {
+            Value::Mut(_) => true,
+            _ => false,
         }
     }
 }
