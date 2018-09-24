@@ -73,8 +73,6 @@ pub enum Value {
     // macros
     Macro(_Function),
     BaseMacro(_Native),
-    // 可变对象
-    Mut(_MutValue),
 }
 
 
@@ -82,7 +80,6 @@ impl ToString for Value {
     fn to_string(&self) -> String {
         match self {
             Value::Nil => "nil".to_string(),
-            Value::Mut(_) => "<Mut>".to_string(),
             Value::Int(ref x) => x.to_string(),
             Value::UInt(ref x) => x.to_string(),
             Value::Bool(ref x) => x.to_string(),
@@ -139,14 +136,6 @@ impl Value {
             Value::Macro(_) |
             Value::BaseMacro(_) => "macro".to_string(),
             // Value::Native(_) => Some("<native>".to_string()),
-            Value::Mut(_) => "mut".to_string(), // fixMe: 这个要重写，调用value.get_type（mut不是类型，是属性）
-        }
-    }
-
-    pub fn is_mut(&self) -> bool {
-        match self {
-            Value::Mut(_) => true,
-            _ => false,
         }
     }
 }
