@@ -6,6 +6,8 @@ use parser::lexer::lexer;
 pub mod token;
 pub mod lexer;
 
+/// ## Parser
+/// parser只是把lexer与raw_parser粘起来
 pub fn parser(src: &String) -> Result<Vec<Value>, (usize, String)> {
     let tf = lexer(src);
     return raw_parser(tf.as_ref());
