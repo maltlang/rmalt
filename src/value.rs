@@ -71,10 +71,21 @@ pub enum Value {
     Function(_Function),
     Native(_Native),
     // macros
-    Macro(_Function),
-    BaseMacro(_Native),
+    //Macro(_Function),
+    //BaseMacro(_Native),
 }
 
+fn to_string(this: &Vec<Value>) -> String {
+    let mut s = String::from("(");
+    for (i, v) in this.iter().enumerate() {
+        if i != 0 {
+            s.push_str(" ".to_string().as_ref());
+        }
+        s.push_str(v.to_string().as_ref());
+    }
+    s.push_str(")".to_string().as_ref());
+    s
+}
 
 impl ToString for Value {
     fn to_string(&self) -> String {
@@ -88,14 +99,14 @@ impl ToString for Value {
             Value::Symbol(ref x) => x.to_string(),
             Value::String(ref x) => x.to_string(),
             Value::Object(_) => "<object>".to_string(),
-            Value::Macro(ref x) => "<macro ".to_string() + &*x.name + ">",
+            //Value::Macro(ref x) => "<macro ".to_string() + &*x.name + ">",
             Value::Native(ref x) => "<native ".to_string() + &*x.name + ">",
             Value::Function(ref x) => "<function ".to_string() + &*x.name + ">",
-            Value::BaseMacro(ref x) => "<base-macro ".to_string() + &*x.name + ">",
+            //Value::BaseMacro(ref x) => "<base-macro ".to_string() + &*x.name + ">",
             // 还没写好的
             //Value::List(_) => "<list>".to_string(),
             Value::Dict(_) => "<dict>".to_string(),
-            Value::Tuple(ref _x) => "<tuple>".to_string(),
+            Value::Tuple(ref x) => to_string(x),
         }
     }
 }
@@ -133,8 +144,8 @@ impl Value {
             Value::Object(_) => "object".to_string(),
             Value::Function(_) |
             Value::Native(_) => "function".to_string(),
-            Value::Macro(_) |
-            Value::BaseMacro(_) => "macro".to_string(),
+            //Value::Macro(_) |
+            //Value::BaseMacro(_) => "macro".to_string(),
             // Value::Native(_) => Some("<native>".to_string()),
         }
     }

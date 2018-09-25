@@ -81,7 +81,7 @@ fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (usize
                 match parser_tuple(tf, idx + 1) {
                     Ok((val, nidx)) => Ok(
                         (
-                            Value::Tuple(Handle::from(vec![Value::Symbol(Handle::from("eval".to_string())), val])),
+                            val,
                             nidx
                         )),
                     Err(t) => Err(t),
@@ -90,7 +90,7 @@ fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (usize
                 match parser_list(tf, idx + 1) {
                     Ok((val, nidx)) => Ok(
                         (
-                            Value::Tuple(Handle::from(vec![Value::Symbol(Handle::from("eval".to_string())), val])),
+                            val,
                             nidx
                         )),
                     Err(t) => Err(t),
