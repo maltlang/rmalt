@@ -49,7 +49,12 @@ fn list_eval(list: Arc<Vec<Value>>, ic: &Arc<ThreadContext>) -> Value {
 
 impl Eval for Value {
     fn eval(&self, ic: &Arc<ThreadContext>) -> Value {
-        if let Value::Object(ref x) = self {
+        if let Value::Symbol(ref x) = self {
+            // 实际上需要load symbol
+            return Value::Symbol(x.clone());
+        } else if let Value::Tuple(ref x) = self {
+            return list_eval(x.clone(), ic);
+        } else if let Value::Object(ref x) = self {
             if let Some(y) = x.get("__Eval__") {
                 if let Value::Function(ref z) = y {
                     return z.call_function(ic, Arc::from(vec![]));
@@ -57,8 +62,6 @@ impl Eval for Value {
                     return z.call_function(ic, Arc::from(vec![]));
                 }
             }
-        } else if let Value::Tuple(ref x) = self {
-            return list_eval(x.clone(), ic);
         }
         self.clone()
     }
