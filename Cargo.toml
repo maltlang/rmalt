@@ -4,12 +4,12 @@ version = "0.1.0"
 authors = ["Zhihang-Liu <enterindex@gmail.com>"]
 
 #[lib]
-#name = "librmalt"
+#name = "libmalt"
 #path = "./src/lib.rs"
 #crate-type = ["cdylib"]
 
 [[bin]]
-name = "rmalt"
+name = "malt"
 path = "./src/main.rs"
 
 #[[bin]]
