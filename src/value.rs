@@ -95,9 +95,10 @@ impl ToString for Value {
             Value::UInt(ref x) => x.to_string(),
             Value::Bool(ref x) => x.to_string(),
             Value::Char(ref x) => x.to_string(),
+            Value::Tuple(ref x) => to_string(x),
             Value::Float(ref x) => x.to_string(),
             Value::Symbol(ref x) => x.to_string(),
-            Value::String(ref x) => x.to_string(),
+            Value::String(ref x) => "\"".to_string() + x + "\"",
             Value::Object(_) => "<object>".to_string(),
             //Value::Macro(ref x) => "<macro ".to_string() + &*x.name + ">",
             Value::Native(ref x) => "<native ".to_string() + &*x.name + ">",
@@ -106,7 +107,6 @@ impl ToString for Value {
             // 还没写好的
             //Value::List(_) => "<list>".to_string(),
             Value::Dict(_) => "<dict>".to_string(),
-            Value::Tuple(ref x) => to_string(x),
         }
     }
 }
