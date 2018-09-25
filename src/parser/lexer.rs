@@ -4,6 +4,7 @@ use parser::token::TokenValue;
 use parser::token::TokenPos;
 use parser::token::Token;
 use std::sync::Arc;
+use value::Handle;
 
 //use regex::Regex;
 //use self::regex::Regex;
@@ -225,20 +226,26 @@ pub fn lexer(s: &str) -> Vec<Token> {
             Mode::STRING => {
                 match i {
                     '\n' => {
+                        strbuf.push(i);
                         line += 1;
                         col = 0;
                     }
                     '\"' => {
-                        // 判断之前的是不是'\\'如果是，就不退回
-                        rs.push(Token {
-                            val: TokenValue::STRING(Arc::new(strbuf)),
-                            pos: strpos,
-                        });
-                        strpos = TokenPos {
-                            line: 0,
-                            col: 0,
-                        };
-                        strbuf = String::new();
+                        if strbuf.len() == 0 || strbuf.chars().nth(strbuf.len() - 1).unwrap() == '\\' {
+                            strbuf.push(i);
+                        } else {
+                            rs.push(Token {
+                                val: TokenValue::STRING(Handle::from(strbuf)),
+                                pos: strpos,
+                            });
+                            // clear
+                            strpos = TokenPos {
+                                line: 0,
+                                col: 0,
+                            };
+                            strbuf = String::new();
+                            mode = Mode::CODE;
+                        }
                     }
                     _ => { strbuf.push(i); }
                 };
