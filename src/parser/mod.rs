@@ -20,7 +20,9 @@ pub fn raw_parser(tf: &[token::Token]) -> Result<Vec<Value>, (usize, String)> {
         let mut sz = 0;
         let mut r: Vec<Value> = vec![];
         loop {
-            if sz > tf.len() { break; }
+            if sz > tf.len() {
+                break;
+            }
             match parser_once(tf, sz) {
                 Ok((val, nidx)) => {
                     sz = nidx;
@@ -76,24 +78,76 @@ fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (usize
                     Err(t) => Err(t),
                 }
             token::TokenValue::LMP =>
-                Err((0, "".to_string())),
+                match parser_tuple(tf, idx + 1) {
+                    Ok((val, nidx)) => Ok(
+                        (
+                            Value::Tuple(Handle::from(vec![Value::Symbol(Handle::from("eval".to_string())), val])),
+                            nidx
+                        )),
+                    Err(t) => Err(t),
+                }
             token::TokenValue::LP =>
-                Err((0, "".to_string())),
+                match parser_list(tf, idx + 1) {
+                    Ok((val, nidx)) => Ok(
+                        (
+                            Value::Tuple(Handle::from(vec![Value::Symbol(Handle::from("eval".to_string())), val])),
+                            nidx
+                        )),
+                    Err(t) => Err(t),
+                }
             _ => Err((idx, "Invalid expression begins".to_string()))
         }
     } else {
-        Err((idx, "Expression not ending".to_string()))
+        Err((idx - 1, "Expression not ending".to_string()))
     }
 }
 
-/*
+// 这俩函数其实就差一个字
+
 #[inline]
 pub fn parser_list(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (usize, String)> {
-    Err((idx, "还没写完啊，慌什么慌啊".to_string()))
+    let mut sz = idx;
+    let mut r: Vec<Value> = vec![];
+    loop {
+        if sz > tf.len() {
+            return Err((idx - 1, "Expression not ending".to_string()));
+        }
+        if let token::TokenValue::RP = tf[sz].val {
+            return Ok((
+                Value::Tuple(Handle::from(r)),
+                sz + 1
+            ));
+        }
+        match parser_once(tf, sz) {
+            Ok((val, nidx)) => {
+                sz = nidx;
+                r.push(val);
+            }
+            Err(e) => return Err(e),
+        }
+    }
 }
 
 #[inline]
 pub fn parser_tuple(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (usize, String)> {
-    Err((idx, "还没写完啊，慌什么慌啊".to_string()))
+    let mut sz = idx;
+    let mut r: Vec<Value> = vec![];
+    loop {
+        if sz > tf.len() {
+            return Err((idx - 1, "Expression not ending".to_string()));
+        }
+        if let token::TokenValue::RMP = tf[sz].val {
+            return Ok((
+                Value::Tuple(Handle::from(r)),
+                sz + 1
+            ));
+        }
+        match parser_once(tf, sz) {
+            Ok((val, nidx)) => {
+                sz = nidx;
+                r.push(val);
+            }
+            Err(e) => return Err(e),
+        }
+    }
 }
-*/
