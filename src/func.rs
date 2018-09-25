@@ -6,6 +6,7 @@ use core::interpreter::FunctionContext;
 use core::interpreter::ThreadContext;
 use std::sync::Weak;
 
+
 pub struct Function {
     pub modu: Weak<module::Module>,
     pub name: String,
@@ -19,6 +20,6 @@ pub struct Native {
 }
 
 pub trait Call {
-    fn call(&self, ic: &Arc<ThreadContext>, args: _Tuple) -> Value;
+    fn call_function(&self, ic: &Arc<ThreadContext>, args: _Tuple) -> Value;
 }
 

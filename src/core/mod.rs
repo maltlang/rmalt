@@ -13,13 +13,13 @@ use core::interpreter::ThreadContext;
 
 
 impl Call for Function {
-    fn call(&self, _ic: &Arc<ThreadContext>, _args: _Tuple) -> Value {
+    fn call_function(&self, _ic: &Arc<ThreadContext>, _args: _Tuple) -> Value {
         Value::Nil
     }
 }
 
 impl Call for Native {
-    fn call(&self, ic: &Arc<ThreadContext>, args: _Tuple) -> Value {
+    fn call_function(&self, ic: &Arc<ThreadContext>, args: _Tuple) -> Value {
         (self.fp)(ic, args)
     }
 }
