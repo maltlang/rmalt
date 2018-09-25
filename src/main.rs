@@ -1,4 +1,7 @@
 use std::io;
+use parser::lexer::lexer;
+//use parser::parser;
+use parser::parser;
 //use std::collections::HashMap;
 //use std::sync::Arc;
 
@@ -13,9 +16,17 @@ fn main() {
         println!(">>>");
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
-        let _tf = parser::lexer::lexer(&input);
-        for i in &_tf {
-            println!("{}", i.to_string());
+        // lexer
+        let tf = lexer(input.as_ref());
+        // parser
+        match parser(tf.as_ref()) {
+            Ok(x) => {
+                for i in x {
+                    println!("{}", i.to_string());
+                }
+            }
+            Err((pos, info)) =>
+                eprintln!("*** parser-error: {}, {}:{}", info, tf[pos].pos.line, tf[pos].pos.col),
         }
     }
 }

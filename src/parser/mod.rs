@@ -1,26 +1,26 @@
-//use std::sync::Arc;
 use value::Value;
 use value::Handle;
-use parser::lexer::lexer;
 
 pub mod token;
 pub mod lexer;
 
 /// ## Parser
+/*
 /// parser只是把lexer与raw_parser粘起来
 pub fn parser(src: &String) -> Result<Vec<Value>, (usize, String)> {
     let tf = lexer(src);
     return raw_parser(tf.as_ref());
 }
+*/
 
-pub fn raw_parser(tf: &[token::Token]) -> Result<Vec<Value>, (usize, String)> {
+pub fn parser(tf: &[token::Token]) -> Result<Vec<Value>, (usize, String)> {
     if tf.len() == 0 {
         Ok(vec![])
     } else {
         let mut sz = 0;
         let mut r: Vec<Value> = vec![];
         loop {
-            if sz > tf.len() {
+            if sz >= tf.len() {
                 break;
             }
             match parser_once(tf, sz) {
@@ -109,7 +109,7 @@ pub fn parser_list(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (u
     let mut sz = idx;
     let mut r: Vec<Value> = vec![];
     loop {
-        if sz > tf.len() {
+        if sz >= tf.len() {
             return Err((idx - 1, "Expression not ending".to_string()));
         }
         if let token::TokenValue::RP = tf[sz].val {
@@ -133,7 +133,7 @@ pub fn parser_tuple(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (
     let mut sz = idx;
     let mut r: Vec<Value> = vec![];
     loop {
-        if sz > tf.len() {
+        if sz >= tf.len() {
             return Err((idx - 1, "Expression not ending".to_string()));
         }
         if let token::TokenValue::RMP = tf[sz].val {
