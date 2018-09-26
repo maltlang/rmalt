@@ -13,6 +13,7 @@ fn list_eval(list: Arc<Vec<Value>>, ic: &Arc<ThreadContext>) -> Value {
     if list.len() == 0 {
         return Value::Nil;
     }
+    /* 流程控制的处理
     if let Value::Symbol(ref x) = list[0] {
         /* quote 用宏来做吧
         if x == String::from("quote") {
@@ -31,6 +32,7 @@ fn list_eval(list: Arc<Vec<Value>>, ic: &Arc<ThreadContext>) -> Value {
             return Value::Nil;
         }
     }
+    */
     // fcall的各种求值
     let head = list[0].eval(ic);
     let mut body: Vec<Value> = Vec::new();
