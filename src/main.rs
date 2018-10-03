@@ -1,6 +1,7 @@
+extern crate core;
+
 use std::io;
 use parser::lexer::lexer;
-//use parser::parser;
 use parser::parser;
 //use std::collections::HashMap;
 //use std::sync::Arc;

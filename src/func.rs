@@ -1,22 +1,23 @@
 use std::sync::Arc;
-use value::Value;
-use value::MaltResult;
-use value::_Tuple;
-//use runtime::module;
-//use runtime::interpreter::FunctionContext;
-//use runtime::interpreter::ThreadContext;
 use std::sync::Weak;
 
-/*
+use value::_Tuple;
+use value::Value;
+use value::MaltResult;
+use runtime::context::ModuleContext;
+use runtime::context::FunctionContext;
+use runtime::context::ThreadContext;
+
 //#[derive(Clone)]
 pub struct Function {
-    pub modu: Weak<module::Module>,
-    pub name: Arc<String>,
-    pub expr: Arc<Vec<Value>>,
-    pub argn: Arc<Vec<String>>,
+    pub modu: Weak<ModuleContext>,
+    pub name: String,
+    pub expr: Vec<Value>,
+    pub argn: Vec<String>,
     pub env: Option<Arc<FunctionContext>>,
 }
 
+/*
 //impl Copy for Function { }
 
 impl Clone for Function {
@@ -34,9 +35,5 @@ impl Clone for Function {
 
 pub struct Native {
     pub name: String,
-    pub fp: fn(_Tuple) -> MaltResult,
-}
-
-pub trait Call {
-    fn call_function(&self, args: _Tuple) -> MaltResult;
+    pub fp: fn(&ThreadContext, _Tuple) -> MaltResult,
 }

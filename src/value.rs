@@ -1,8 +1,7 @@
 use std::sync::Arc;
 use std::collections::HashMap;
-//use func::Function;
+use func::Function;
 use func::Native;
-//use runtime::interpreter::ThreadContext;
 
 ///## 类型重命名
 
@@ -10,7 +9,7 @@ pub type Handle<T> = Arc<T>;
 pub type _Str = Handle<String>;
 pub type _Tuple = Handle<Vec<Value>>;
 pub type _Dict = Handle<HashMap<String, Value>>;
-//pub type _Function = Handle<Function>;
+pub type _Function = Handle<Function>;
 pub type _Native = Handle<Native>;
 
 /*
@@ -65,10 +64,10 @@ pub enum Value {
     Dict(_Dict),
     Object(_Dict),
     // functions
-    //Function(_Function),
+    Function(_Function),
     Native(_Native),
     // macros
-    //Macro(_Function),
+    Macro(_Function),
     BaseMacro(_Native),
 }
 
@@ -88,9 +87,9 @@ impl Clone for Value {
             Value::Symbol(ref x) => Value::Symbol(x.clone()),
             Value::String(ref x) => Value::String(x.clone()),
             Value::Object(ref x) => Value::Object(x.clone()),
-            //Value::Macro(ref x) => Value::Macro(x.clone()),
+            Value::Macro(ref x) => Value::Macro(x.clone()),
             Value::Native(ref x) => Value::Native(x.clone()),
-            //Value::Function(ref x) => Value::Function(x.clone()),
+            Value::Function(ref x) => Value::Function(x.clone()),
             Value::BaseMacro(ref x) => Value::BaseMacro(x.clone()),
         }
     }
@@ -121,9 +120,9 @@ impl ToString for Value {
             Value::Symbol(ref x) => x.to_string(),
             Value::String(ref x) => "\"".to_string() + x + "\"",
             Value::Object(_) => "<object>".to_string(),
-            //Value::Macro(ref x) => "<macro ".to_string() + &*x.name + ">",
+            Value::Macro(ref x) => "<macro ".to_string() + &*x.name + ">",
             Value::Native(ref x) => "<native ".to_string() + &*x.name + ">",
-            //Value::Function(ref x) => "<function ".to_string() + &*x.name + ">",
+            Value::Function(ref x) => "<function ".to_string() + &*x.name + ">",
             Value::BaseMacro(ref x) => "<base-macro ".to_string() + &*x.name + ">",
             // 还没写好的
             //Value::List(_) => "<list>".to_string(),
@@ -163,11 +162,10 @@ impl Value {
             Value::Symbol(_) => "symbol".to_string(),
             Value::String(_) => "string".to_string(),
             Value::Object(_) => "object".to_string(),
-            //Value::Function(_) |
+            Value::Function(_) |
             Value::Native(_) => "function".to_string(),
-            //Value::Macro(_) |
+            Value::Macro(_) |
             Value::BaseMacro(_) => "macro".to_string(),
-            // Value::Native(_) => Some("<native>".to_string()),
         }
     }
 }
