@@ -28,7 +28,7 @@ pub struct ThreadContext {
 }
 
 impl ThreadContext {
-    pub fn load_symbol(&self, sym: _Str) -> Option<Value> {
+    pub fn load_symbol(&self, _sym: _Str) -> Option<Value> {
         None
     }
 }
