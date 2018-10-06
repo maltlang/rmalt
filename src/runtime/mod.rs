@@ -13,7 +13,6 @@ use runtime::context::FunctionContext;
 
 pub mod context;
 
-
 pub fn exception(class: &str, info: &str) -> Value {
     let mut r: HashMap<String, Value> = HashMap::new();
     r.insert(String::from("__class__"), Value::Symbol(Arc::from(String::from(class))));
@@ -77,6 +76,31 @@ impl Native {
     }
 }
 
+fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
+    if expr.len() == 0 {
+        return Ok(Value::Nil);
+    }
+    // 检测语句类型（暂时只有call）
+
+    // fun call
+    let mut r: Vec<Value> = vec![];
+    for i in &*expr {
+        r.push(match i.eval(ic) {
+            Ok(x) => x,
+            Err(e) => return Err(e),
+        });
+    }
+    let head = r.remove(0);
+    if let Value::Function(ref x) = &head {
+        return call_function(x.clone(), ic, Arc::from(r));
+    } else if let Value::Native(ref x) = &head {
+        r.remove(0);
+        return x.call_function(ic, Arc::from(r));
+    } else {
+        return Err(exception("CallError", "The callee is not function"));
+    }
+}
+
 impl Value {
     // 慎用，这玩意会把tuple当成调用来搞
     pub fn eval(&self, ic: &ThreadContext) -> MaltResult {
@@ -97,7 +121,7 @@ impl Value {
                 Ok(self.clone())
             }
             // function call
-            Value::Tuple(ref x) => Ok(Value::Tuple(x.clone())),
+            Value::Tuple(ref x) => expr_eval(ic, x.clone()),
             _ => Ok(self.clone())
         }
     }
