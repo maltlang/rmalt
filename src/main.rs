@@ -6,6 +6,7 @@ extern crate regex;
 use std::io;
 use parser::lexer::lexer;
 use parser::parser;
+use runtime::context::ThreadContext;
 //use std::collections::HashMap;
 //use std::sync::Arc;
 
@@ -15,6 +16,8 @@ pub mod parser;
 pub mod runtime;
 
 fn main() {
+    // 创建上下文对象
+    let ic = ThreadContext::new();
     loop {
         println!(">>>");
         let mut input = String::new();
@@ -25,7 +28,11 @@ fn main() {
         match parser(tf.as_ref()) {
             Ok(x) => {
                 for i in x {
-                    println!("{}", i.to_string());
+                    match i.eval(&ic) {
+                        Ok(o) => println!("{}", o.to_string()),
+                        Err(e) => println!("***error: {}", e.to_string()),
+                    }
+
                 }
             }
             Err((pos, info)) =>

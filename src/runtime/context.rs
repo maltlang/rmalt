@@ -70,6 +70,20 @@ impl FunctionContext {
 }
 
 impl ThreadContext {
+    pub fn new() -> ThreadContext {
+        // pub type CommonModuleContext = RefCell<HashMap<String, Arc<ModuleContext>>>;
+        ThreadContext {
+            commonmod: Arc::from(RwLock::from(RefCell::from(HashMap::new()))),
+            using_mod: Arc::from(ModuleContext {
+                path: String::from("__none__"),
+                expr: Vec::new(),
+                vtab: HashMap::new(),
+            }),
+            framestack: RefCell::from(vec![RefCell::from(None); 256]),
+            frame_size: RefCell::from(0),
+        }
+    }
+
     pub fn load_symbol(&self, sym: _Str) -> Option<Value> {
         // 切分
         ///*
