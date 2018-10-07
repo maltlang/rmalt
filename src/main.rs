@@ -19,24 +19,30 @@ fn main() {
     // 创建上下文对象
     let ic = ThreadContext::new();
     loop {
-        println!(">>>");
+        println!("λ");
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         // lexer
-        let tf = lexer(input.as_ref());
-        // parser
-        match parser(tf.as_ref()) {
-            Ok(x) => {
-                for i in x {
-                    match i.eval(&ic) {
-                        Ok(o) => println!("{}", o.to_string()),
-                        Err(e) => println!("***error: {}", e.to_string()),
+        match lexer(input.as_ref()) {
+            Ok(tf) =>
+            // parser
+                match parser(tf.as_ref()) {
+                    Ok(x) => {
+                        for i in x {
+                            //println!("{}", i.to_string());
+                            // /*
+                            match i.eval(&ic) {
+                                Ok(o) => println!("{} -> {}", o.get_type(), o.to_string()),
+                                Err(e) => println!("***error: {}", e.to_string()),
+                            }
+                            // */
+                        }
                     }
-
+                    Err((pos, info)) =>
+                        eprintln!("*** parser-error: {}, {}:{}", info, tf[pos].pos.line, tf[pos].pos.col),
                 }
-            }
-            Err((pos, info)) =>
-                eprintln!("*** parser-error: {}, {}:{}", info, tf[pos].pos.line, tf[pos].pos.col),
+            Err(e) =>
+                eprintln!("*** lexer-error: 字符串未结束, {}:{}", e.line, e.col),
         }
     }
 }

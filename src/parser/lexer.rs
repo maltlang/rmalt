@@ -41,7 +41,7 @@ fn other_get(s: &str) -> TokenValue {
 }
 
 //impl Token {
-pub fn lexer(s: &str) -> Vec<Token> {
+pub fn lexer(s: &str) -> Result<Vec<Token>, TokenPos> {
     let mut line: usize = 1;
     let mut col: usize = 1;
 
@@ -231,9 +231,7 @@ pub fn lexer(s: &str) -> Vec<Token> {
                         col = 0;
                     }
                     '\"' => {
-                        if strbuf.len() == 0 || strbuf.chars().nth(strbuf.len() - 1).unwrap() == '\\' {
-                            strbuf.push(i);
-                        } else {
+                        if strbuf.len() == 0 {
                             rs.push(Token {
                                 val: TokenValue::STRING(Handle::from(strbuf)),
                                 pos: strpos,
@@ -245,6 +243,20 @@ pub fn lexer(s: &str) -> Vec<Token> {
                             };
                             strbuf = String::new();
                             mode = Mode::CODE;
+                        } else if strbuf.chars().nth(strbuf.len() - 1).unwrap() != '\\' {
+                            rs.push(Token {
+                                val: TokenValue::STRING(Handle::from(strbuf)),
+                                pos: strpos,
+                            });
+                            // clear
+                            strpos = TokenPos {
+                                line: 0,
+                                col: 0,
+                            };
+                            strbuf = String::new();
+                            mode = Mode::CODE;
+                        } else {
+                            strbuf.push(i);
                         }
                     }
                     _ => { strbuf.push(i); }
@@ -253,6 +265,20 @@ pub fn lexer(s: &str) -> Vec<Token> {
         };
         col += 1;
     }
-    rs
+    match mode {
+        Mode::STRING => {
+            return Err(strpos);
+        }
+        Mode::CODE => {
+            if (*strbuf).len() > 0 {
+                rs.push(Token {
+                    val: other_get(&strbuf),
+                    pos: strpos,
+                });
+            };
+        }
+        Mode::NOTE => {}
+    }
+    Ok(rs)
 }
 //}

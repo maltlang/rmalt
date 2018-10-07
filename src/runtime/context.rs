@@ -102,14 +102,18 @@ impl ThreadContext {
         if a.len() == 0 {
             // 如果没匹配到
             // found Symbol in this FunctionContext
-            let a = self.framestack.borrow();
-            let fs = a[self.frame_size.borrow().clone()].borrow();
-            if let Some(x) = fs.clone().unwrap().load_symbol(sym.clone()) {
-                return Some(x);
+            if self.frame_size.borrow().clone() != 0 {
+                let a = self.framestack.borrow();
+                let fs = a[self.frame_size.borrow().clone()].borrow();
+                if let Some(x) = fs.clone().unwrap().load_symbol(sym.clone()) {
+                    return Some(x);
+                }
             }
+            // found Symbol in this ModuleContext
             if let Some(x) = self.using_mod.load_symbol(sym.clone()) {
                 return Some(x);
             }
+            // found Symbol in 'Prelude' ModuleContext
             let cm = self.commonmod.read().unwrap();
             return match cm.borrow().get("Prelude") {
                 Some(x) => x.load_symbol(sym.clone()),
