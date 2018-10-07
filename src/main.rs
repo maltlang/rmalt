@@ -1,4 +1,7 @@
-extern crate core;
+#[macro_use]
+extern crate lazy_static;
+extern crate regex;
+//extern crate core;
 
 use std::io;
 use parser::lexer::lexer;
