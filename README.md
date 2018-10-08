@@ -22,7 +22,7 @@ Parser is malt parser(default parser)
 ## Demo
 malt(malt-repl):
 注意：λ是命令提示符
-'''malt
+```malt
 λ __version__
 λ (__version__)
 λ +
@@ -31,4 +31,4 @@ malt(malt-repl):
 λ (+ +1 -2)
 λ (+ -1 1) # 这是语言故意这么设计的，对于不熟悉的人来说就是坑
 λ (+ 1.1 -1.2)
-'''
+```
