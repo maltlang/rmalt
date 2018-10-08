@@ -210,7 +210,6 @@ impl ThreadContext {
                     return Some(x);
                 }
             }
-            //TODO: if self.using_mod...
             // found Symbol in 'Prelude' ModuleContext
             let cm = self.commonmod.read().unwrap();
             return match cm.borrow().get("Prelude") {
