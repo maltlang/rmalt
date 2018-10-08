@@ -23,13 +23,9 @@ pub fn parser(tf: &[token::Token]) -> Result<Vec<Value>, (usize, String)> {
             if sz >= tf.len() {
                 break;
             }
-            match parser_once(tf, sz) {
-                Ok((val, nidx)) => {
-                    sz = nidx;
-                    r.push(val);
-                }
-                Err(e) => return Err(e),
-            }
+            let (val, nidx) = parser_once(tf, sz)?;
+            sz = nidx;
+            r.push(val);
         }
         Ok(r)
     }
@@ -40,61 +36,38 @@ fn parser_once(tf: &[token::Token], idx: usize) -> Result<(Value, usize), (usize
     if let Some(ref x) = tf.get(idx) {
         match x.val {
             token::TokenValue::INT(ref y) =>
-                Ok((
-                    Value::Int(y.clone()),
+                Ok((Value::Int(y.clone()),
                     idx + 1)),
             token::TokenValue::UINT(ref y) =>
-                Ok((
-                    Value::UInt(y.clone()),
+                Ok((Value::UInt(y.clone()),
                     idx + 1)),
             token::TokenValue::FLOAT(ref y) =>
-                Ok((
-                    Value::Float(y.clone()),
+                Ok((Value::Float(y.clone()),
                     idx + 1)),
             token::TokenValue::STRING(ref y) =>
-                Ok((
-                    Value::String(y.clone()),
+                Ok((Value::String(y.clone()),
                     idx + 1)),
             token::TokenValue::SYMBOL(ref y) =>
-                Ok((
-                    Value::Symbol(y.clone()),
+                Ok((Value::Symbol(y.clone()),
                     idx + 1)),
-            token::TokenValue::QUO =>
-                match parser_once(tf, idx + 1) {
-                    Ok((val, nidx)) => Ok(
-                        (
-                            Value::Tuple(Handle::from(vec![Value::Symbol(Handle::from("quote".to_string())), val])),
-                            nidx
-                        )),
-                    Err(t) => Err(t),
-                }
-            token::TokenValue::EVL =>
-                match parser_once(tf, idx + 1) {
-                    Ok((val, nidx)) => Ok(
-                        (
-                            Value::Tuple(Handle::from(vec![Value::Symbol(Handle::from("eval".to_string())), val])),
-                            nidx
-                        )),
-                    Err(t) => Err(t),
-                }
-            token::TokenValue::LMP =>
-                match parser_tuple(tf, idx + 1) {
-                    Ok((val, nidx)) => Ok(
-                        (
-                            val,
-                            nidx
-                        )),
-                    Err(t) => Err(t),
-                }
-            token::TokenValue::LP =>
-                match parser_list(tf, idx + 1) {
-                    Ok((val, nidx)) => Ok(
-                        (
-                            val,
-                            nidx
-                        )),
-                    Err(t) => Err(t),
-                }
+            token::TokenValue::QUO => {
+                let (val, nidx) = parser_once(tf, idx + 1)?;
+                Ok((Value::Tuple(Handle::from(vec![Value::Symbol(Handle::from("quote".to_string())), val])),
+                    nidx))
+            }
+            token::TokenValue::EVL => {
+                let (val, nidx) = parser_once(tf, idx + 1)?;
+                Ok((Value::Tuple(Handle::from(vec![Value::Symbol(Handle::from("eval".to_string())), val])),
+                    nidx))
+            }
+            token::TokenValue::LMP => {
+                let (val, nidx) = parser_once(tf, idx + 1)?;
+                Ok((val, nidx))
+            }
+            token::TokenValue::LP => {
+                let (val, nidx) = parser_once(tf, idx + 1)?;
+                Ok((val, nidx))
+            }
             _ => Err((idx, "Invalid expression begins".to_string()))
         }
     } else {

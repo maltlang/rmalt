@@ -212,18 +212,18 @@ impl ThreadContext {
             }
             // found Symbol in 'Prelude' ModuleContext
             let cm = self.commonmod.read().unwrap();
-            return match cm.borrow().get("Prelude") {
-                Some(ref x) => x.load_symbol(sym.clone()),
-                None => None,
-            };
+            if let Some(ref x) = cm.borrow().get("Prelude") {
+                return x.load_symbol(sym.clone());
+            }
+            return None;
         } else if a.len() == 1 {
             // 如果匹配到了
             let cm = self.commonmod.read().unwrap();
             let c = &(&a)[0].0;
-            return match cm.borrow().get(c.as_str()) {
-                Some(x) => x.load_symbol(Arc::from((&a)[0].1.clone())),
-                None => None,
-            };
+            if let Some(x) = cm.borrow().get(c.as_str()) {
+                return x.load_symbol(Arc::from((&a)[0].1.clone()));
+            }
+            return None;
         } else {
             // 如果匹配个数大于1，那就说明有人在骚搞，打死
             return None;

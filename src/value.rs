@@ -135,18 +135,16 @@ impl ToString for Value {
             Value::UInt(ref x) => x.to_string(),
             Value::Bool(ref x) => x.to_string(),
             Value::Char(ref x) => x.to_string(),
-            Value::Tuple(ref x) => to_string(x),
+            Value::Dict(ref x) => dict_to_string(x.clone()),
             Value::Float(ref x) => x.to_string(),
+            Value::Tuple(ref x) => to_string(x),
             Value::Symbol(ref x) => x.to_string(),
             Value::String(ref x) => "\"".to_string() + x + "\"",
+            Value::Object(ref x) =>default_object_to_string(x.clone()),
             Value::Macro(ref x) => "<macro '".to_string() + &*x.name + "'>",
             Value::Native(ref x) => "<native '".to_string() + &*x.name + "'>",
             Value::Function(ref x) => "<function '".to_string() + &*x.name + "'>",
             Value::BaseMacro(ref x) => "<base-macro '".to_string() + &*x.name + "'>",
-            // 还没写好的
-            //Value::List(_) => "<list>".to_string(),
-            Value::Dict(ref x) => dict_to_string(x.clone()),
-            Value::Object(ref x) =>default_object_to_string(x.clone()),
         }
     }
 }

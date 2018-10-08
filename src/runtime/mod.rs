@@ -57,12 +57,8 @@ pub fn call_function(this: _Function, ic: &ThreadContext, args: _Tuple) -> MaltR
 
     let mut r = Value::Nil;
     for i in this.clone().expr.clone() {
-        match i.eval(ic) {
-            Ok(x) => {
-                r = x;
-            }
-            Err(e) => return Err(e)
-        }
+        let x = i.eval(ic)?;
+        r = x;
     }
 
     ic.framestack.borrow_mut()[ic.frame_size.borrow().clone() - 1].replace(None);
@@ -86,10 +82,8 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     // fun call
     let mut r: Vec<Value> = vec![];
     for i in &*expr {
-        r.push(match i.eval(ic) {
-            Ok(x) => x,
-            Err(e) => return Err(e),
-        });
+        let x = i.eval(ic)?;
+        r.push(x);
     }
     let head = r.remove(0);
     if let Value::Function(ref x) = &head {
