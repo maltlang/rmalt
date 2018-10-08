@@ -77,8 +77,31 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     if expr.len() == 0 {
         return Ok(Value::Nil);
     }
-    // 检测语句类型（暂时只有call）
-
+    // 检测语句类型
+    if let Value::Symbol(ref x) = expr[0].clone() {
+        if **x == "quote".to_string() {
+            if expr.len() != 2 {
+                return Err(exception("PredicateError", "'quote' parameters number is not 1"));
+            }
+            return Ok(expr[1].clone());
+        }
+        if **x == "if".to_string() {
+            // TODO: if expr eval
+        }
+        // 以下都不是必须的，实现优先级降低
+        //else
+        if **x == "cond".to_string() {
+            // TODO: cond expr eval
+        } else if **x == "match".to_string() {
+            // TODO: match expr eval
+        } else if **x == "loop!".to_string() {
+            // TODO: loop expr eval
+        } else if **x == "while!".to_string() {
+            // TODO: while expr eval
+        } else if **x == "for!".to_string() {
+            // TODO: for expr eval
+        }
+    }
     // fun call
     let mut r: Vec<Value> = vec![];
     for i in &*expr {
