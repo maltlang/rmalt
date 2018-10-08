@@ -2,21 +2,22 @@ use std::sync::Arc;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-//use func::Function;
 use func::Native;
+//use func::Function;
 use value::Value;
 use value::_Tuple;
 use value::_Function;
 use value::MaltResult;
 use runtime::context::ThreadContext;
 use runtime::context::FunctionContext;
+use value::Handle;
 
 pub mod context;
 
 pub fn exception(class: &str, info: &str) -> Value {
     let mut r: HashMap<String, Value> = HashMap::new();
-    r.insert(String::from("__class__"), Value::Symbol(Arc::from(String::from(class))));
-    r.insert(String::from("__info__"), Value::String(Arc::from(String::from(info))));
+    r.insert(String::from("__class__"), Value::Symbol(Handle::from(String::from(class))));
+    r.insert(String::from("__info__"), Value::String(Handle::from(String::from(info))));
     Value::Object(Arc::from(r))
 }
 
@@ -26,14 +27,14 @@ fn args_length_exception() -> Value {
 }
 
 #[inline]
-fn symbol_not_found_exception() -> Value {
-    exception("SymbolError", "Symbol not found")
+fn symbol_not_found_exception(sym: &str) -> Value {
+    exception("SymbolError", &("Symbol '".to_string() + sym + "' not found"))
 }
 
-#[inline]
-fn object_member_eval_is_not_function_exception() -> Value {
-    exception("TypeError", "Object member '__eval__' is not function")
-}
+//#[inline]
+//fn object_member_eval_is_not_function_exception() -> Value {
+//    exception("TypeError", "Object member '__eval__' is not function")
+//}
 
 pub fn call_function(this: _Function, ic: &ThreadContext, args: _Tuple) -> MaltResult {
     ic.framestack.borrow_mut()[ic.frame_size.borrow().clone()]
@@ -94,7 +95,6 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     if let Value::Function(ref x) = &head {
         return call_function(x.clone(), ic, Arc::from(r));
     } else if let Value::Native(ref x) = &head {
-        r.remove(0);
         return x.call_function(ic, Arc::from(r));
     } else {
         return Err(exception("CallError", "The callee is not function"));
@@ -107,17 +107,20 @@ impl Value {
         match self {
             Value::Symbol(ref x) => match ic.load_symbol(x.clone()) {
                 Some(x) => Ok(x),
-                None => Err(symbol_not_found_exception()),
+                None => Err(symbol_not_found_exception(x.as_ref())),
             },
-            Value::Object(ref x) => if let Some(y) = x.get("__eval__") {
-                if let Value::Function(ref z) = y {
-                    call_function(z.clone(), ic, Arc::from(vec![]))
-                } else if let Value::Native(ref z) = y {
-                    z.call_function(ic, Arc::from(vec![]))
-                } else {
-                    Err(object_member_eval_is_not_function_exception())
+            Value::Object(ref _x) => {
+                /*
+                if let Some(y) = x.get("__eval__") {
+                    if let Value::Function(ref z) = y {
+                        call_function(z.clone(), ic, Arc::from(vec![]))
+                    } else if let Value::Native(ref z) = y {
+                        z.call_function(ic, Arc::from(vec![]))
+                    } else {
+                        Err(object_member_eval_is_not_function_exception())
+                    }
                 }
-            } else {
+                */
                 Ok(self.clone())
             }
             // function call

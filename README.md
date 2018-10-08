@@ -4,9 +4,31 @@ The rust implementation of malt programming language
 ## Parser
 Parser is malt parser(default parser)
 
-### Node:
-- 2018/9/29 22:39: 由于几个弱智问题，暂时屏蔽runtime模块，启用codegen。
-- 2018/9/25 23:14: 修复了一个弱智lexer的字符串解析bug，这是历史遗留问题。
+## BaseType
+- Nil
+- Bool
+- Int
+- UInt
+- Float
+- Symbol
+- String
+- Tuple
+- Dict
+- Object
+- Function
 
-## 提议：Proposal
-- 2018/9/25 23:22: Determine the Malt Core and Library Version code format。
+***注意：前面不加符号表示无符号整数，加符号表示有符号整数，浮点数除外***
+
+## Demo
+malt(malt-repl):
+注意：λ是命令提示符
+'''malt
+λ __version__
+λ (__version__)
+λ +
+λ (+)
+λ (+ 1 2)
+λ (+ +1 -2)
+λ (+ -1 1) # 这是语言故意这么设计的，对于不熟悉的人来说就是坑
+λ (+ 1.1 -1.2)
+'''

@@ -33,7 +33,9 @@ impl Clone for Function {
 }
 */
 
+pub type MaltNativeInterface = fn(&ThreadContext, _Tuple) -> MaltResult;
+
 pub struct Native {
     pub name: String,
-    pub fp: fn(&ThreadContext, _Tuple) -> MaltResult,
+    pub fp: MaltNativeInterface,
 }

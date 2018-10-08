@@ -107,6 +107,26 @@ fn to_string(this: &Vec<Value>) -> String {
     s
 }
 
+fn dict_to_string(d: _Dict) -> String {
+    let mut s = String::from("{");
+    for (mut c, v) in &(*d) {
+        s.push(' ');
+        s.push_str(c.as_ref());
+        s.push_str(": ");
+        s.push_str(v.to_string().as_ref());
+        s.push(',');
+    }
+    s.push_str(" }");
+    s
+}
+
+fn default_object_to_string(d: _Dict) -> String {
+    match d.get("__class__") {
+        Some(x) => x.to_string() + " " + &dict_to_string(d.clone()),
+        None => dict_to_string(d.clone()),
+    }
+}
+
 impl ToString for Value {
     fn to_string(&self) -> String {
         match self {
@@ -119,14 +139,14 @@ impl ToString for Value {
             Value::Float(ref x) => x.to_string(),
             Value::Symbol(ref x) => x.to_string(),
             Value::String(ref x) => "\"".to_string() + x + "\"",
-            Value::Object(_) => "<object>".to_string(),
-            Value::Macro(ref x) => "<macro ".to_string() + &*x.name + ">",
-            Value::Native(ref x) => "<native ".to_string() + &*x.name + ">",
-            Value::Function(ref x) => "<function ".to_string() + &*x.name + ">",
-            Value::BaseMacro(ref x) => "<base-macro ".to_string() + &*x.name + ">",
+            Value::Macro(ref x) => "<macro '".to_string() + &*x.name + "'>",
+            Value::Native(ref x) => "<native '".to_string() + &*x.name + "'>",
+            Value::Function(ref x) => "<function '".to_string() + &*x.name + "'>",
+            Value::BaseMacro(ref x) => "<base-macro '".to_string() + &*x.name + "'>",
             // 还没写好的
             //Value::List(_) => "<list>".to_string(),
-            Value::Dict(_) => "<dict>".to_string(),
+            Value::Dict(ref x) => dict_to_string(x.clone()),
+            Value::Object(ref x) =>default_object_to_string(x.clone()),
         }
     }
 }
