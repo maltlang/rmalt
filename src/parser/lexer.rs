@@ -243,7 +243,7 @@ pub fn lexer(s: &str) -> Result<Vec<Token>, TokenPos> {
                             };
                             strbuf = String::new();
                             mode = Mode::CODE;
-                        } else if strbuf.chars().nth(strbuf.len() - 1).unwrap() != '\\' {
+                        } else if strbuf.chars().nth(strbuf.chars().count() - 1).unwrap() != '\\' {
                             rs.push(Token {
                                 val: TokenValue::STRING(Handle::from(strbuf)),
                                 pos: strpos,

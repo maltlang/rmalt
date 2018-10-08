@@ -7,6 +7,7 @@ use std::io;
 use parser::lexer::lexer;
 use parser::parser;
 use runtime::context::ThreadContext;
+use std::io::Write;
 //use std::collections::HashMap;
 //use std::sync::Arc;
 
@@ -19,7 +20,8 @@ fn main() {
     // 创建上下文对象
     let ic = ThreadContext::new();
     loop {
-        println!("λ");
+        let _ = std::io::stdout().write("λ ".as_ref());
+        let _ = std::io::stdout().flush();
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         // lexer
