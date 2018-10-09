@@ -73,6 +73,19 @@ impl Native {
     }
 }
 
+pub fn let_value(ic: &ThreadContext, sym: &String, expr: Value) {
+    if ic.frame_size.borrow().clone() == 0 {
+        // 表示在顶层作用域
+        ic.using_mod.vtab.borrow_mut().insert(sym.to_string(), expr);
+    } else {
+        // 表示在函数作用域
+        let fs = ic.framestack.borrow();
+        let fc = fs[ic.frame_size.borrow().clone() - 1].borrow();
+        let sfc = fc.clone().unwrap();
+        sfc.vtab.borrow_mut().insert(sym.to_string(), expr);
+    }
+}
+
 fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     if expr.len() == 0 {
         return Ok(Value::Nil);
@@ -89,18 +102,9 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 return Err(exception("PredicateError", "'let' parameters number is not 2.\n\thelp: (let <symbol> <expr>)"));
             }
             if let Value::Symbol(ref x) = expr[1].clone() {
-                let val = expr[2].clone().eval(ic)?;
-                if ic.frame_size.borrow().clone() == 0 {
-                    // 表示在顶层作用域
-                    ic.using_mod.vtab.borrow_mut().insert(x.to_string(), val.clone());
-                } else {
-                    // 表示在函数作用域
-                    let fs = ic.framestack.borrow();
-                    let fc = fs[ic.frame_size.borrow().clone() - 1].borrow();
-                    let sfc = fc.clone().unwrap();
-                    sfc.vtab.borrow_mut().insert(x.to_string(), val.clone());
-                }
-                return Ok(val);
+                let e = expr[2].clone().eval(ic)?;
+                let_value(ic, x, e.clone());
+                return Ok(e);
             } else {
                 return Err(exception("PredicateError", "'let' parameters 1 is not symbol type."));
             }
@@ -169,13 +173,12 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             } {
                 for (i, v) in expr.iter().enumerate() {
                     if i > 1 {
-                        eprintln!("item eval");
                         v.clone().eval(ic)?;
                     }
                 }
             }
             return Ok(Value::Nil);
-        }
+        } else if **x == "lambda".to_string() {} else if **x == "function".to_string() {}
         // for!是不需要存在的！
         //追加：其实while!也是不需要存在的
     }
