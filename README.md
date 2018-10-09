@@ -23,8 +23,8 @@ Parser is malt parser(default parser)
 malt(malt-repl):
 注意：λ是命令提示符
 ```malt
-λ __version__
-λ (__version__)
+λ --version--
+λ (--version--)
 λ +
 λ (+)
 λ (+ 1 2)
