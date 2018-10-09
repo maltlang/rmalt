@@ -13,7 +13,10 @@ use value::_Str;
 use value::_Function;
 use value::MaltResult;
 use runtime::args_length_exception;
-use runtime::exception;
+use runtime::tools::exception;
+use runtime::tools::num_to_float;
+use runtime::tools::num_to_uint;
+use runtime::tools::num_to_int;
 
 pub struct ModuleContext {
     pub path: String,
@@ -70,34 +73,6 @@ impl FunctionContext {
         } else {
             return None;
         }
-    }
-}
-
-/// libs
-fn num_to_uint(n: Value) -> Option<u64> {
-    match n {
-        Value::Float(x) => Some(x as u64),
-        Value::UInt(x) => Some(x as u64),
-        Value::Int(x) => Some(x as u64),
-        _ => None
-    }
-}
-
-fn num_to_int(n: Value) -> Option<i64> {
-    match n {
-        Value::Float(x) => Some(x as i64),
-        Value::UInt(x) => Some(x as i64),
-        Value::Int(x) => Some(x as i64),
-        _ => None
-    }
-}
-
-fn num_to_float(n: Value) -> Option<f64> {
-    match n {
-        Value::Float(x) => Some(x as f64),
-        Value::UInt(x) => Some(x as f64),
-        Value::Int(x) => Some(x as f64),
-        _ => None
     }
 }
 

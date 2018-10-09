@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use func::Native;
 //use func::Function;
 use value::Value;
-use value::_Str;
+//use value::_Str;
 use value::_Tuple;
 use value::_Function;
 use value::MaltResult;
@@ -13,15 +13,11 @@ use runtime::context::ThreadContext;
 use runtime::context::FunctionContext;
 use value::Handle;
 use func::Function;
+use runtime::tools::exception;
+use runtime::tools::set_value;
 
+pub mod tools;
 pub mod context;
-
-pub fn exception(class: &str, info: &str) -> Value {
-    let mut r: HashMap<String, Value> = HashMap::new();
-    r.insert(String::from("__class__"), Value::Symbol(Handle::from(String::from(class))));
-    r.insert(String::from("__info__"), Value::String(Handle::from(String::from(info))));
-    Value::Object(Arc::from(r))
-}
 
 #[inline]
 fn args_length_exception() -> Value {
@@ -70,37 +66,6 @@ impl Native {
     pub fn call_function(&self, ic: &ThreadContext, args: _Tuple) -> MaltResult {
         (self.fp)(ic, args)
     }
-}
-
-pub fn set_value(ic: &ThreadContext, sym: _Str, expr: Value) {
-    if ic.frame_size.borrow().clone() != 0 {
-        // 表示在函数作用域
-        let sfc = ic.get_stack_top();
-        sfc.vtab.borrow_mut().insert(sym.to_string(), expr);
-    } else {
-        // 表示在顶层作用域
-        let c = ic.using_mod.borrow();
-        c.vtab.borrow_mut().insert(sym.to_string(), expr);
-    }
-}
-
-pub fn let_value(ic: &ThreadContext, sym: _Str, expr: Value) -> Result<(), Value> {
-    if ic.frame_size.borrow().clone() != 0 {
-        let sfc = ic.get_stack_top();
-        if let Some(_) = sfc.vtab.borrow().get(sym.as_ref()) {
-            return Err(exception("LetError", &("In Function '".to_string() + &sfc.fun.name + "' repeat let")));
-        }
-        // 表示在函数作用域
-        sfc.vtab.borrow_mut().insert(sym.to_string(), expr);
-    } else {
-        // 表示在顶层作用域
-        let c = ic.using_mod.borrow();
-        if let Some(_) = c.vtab.borrow().get(sym.as_ref()) {
-            return Err(exception("LetError", &("In Module '".to_string() + &c.path + "' Repeat let")));
-        }
-        c.vtab.borrow_mut().insert(sym.to_string(), expr);
-    }
-    Ok(())
 }
 
 fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
