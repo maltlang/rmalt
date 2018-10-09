@@ -86,7 +86,7 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             return Ok(expr[1].clone());
         } else if **x == "let".to_string() {
             if expr.len() != 3 {
-                return Err(exception("PredicateError", "'quote' parameters number is not 1.\n\thelp: (let <symbol> <expr>)"));
+                return Err(exception("PredicateError", "'let' parameters number is not 2.\n\thelp: (let <symbol> <expr>)"));
             }
             if let Value::Symbol(ref x) = expr[1].clone() {
                 let val = expr[2].clone().eval(ic)?;
@@ -131,8 +131,7 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             } else {
                 return Err(exception("PredicateError", "'if' parameters number is not 2 or 3.\n\thelp: (if <boolexpr>  <thenexpr> [<elseexpr>])"));
             }
-        }
-            /* 以下都不是必须的，实现优先级降低 */ else if **x == "cond".to_string() {
+        } else if **x == "cond".to_string() {
             // TODO: cond expr eval
         } else if **x == "match".to_string() {
             // TODO: match expr eval
@@ -145,7 +144,20 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 }
             }
         } else if **x == "while!".to_string() {
-            // TODO: while expr eval
+            if expr.len() < 2 {
+                return Err(exception("PredicateError", "'while!' parameters number is less 2.\n\thelp: (while! <boolexpr> [<expr>*])"));
+            }
+            while if let Value::Bool(x) = expr[1].clone().eval(ic)? { x } else {
+                return Err(exception("TypeError", "while! cond expr is not bool result."));
+            } {
+                for (i, v) in expr.iter().enumerate() {
+                    if i > 1 {
+                        eprintln!("item eval");
+                        v.clone().eval(ic)?;
+                    }
+                }
+            }
+            return Ok(Value::Nil);
         } else if **x == "for!".to_string() {
             // TODO: for expr eval
         }
