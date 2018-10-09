@@ -16,15 +16,17 @@ enum Mode {
 }
 
 fn other_get(s: &str) -> TokenValue {
-    let nr: regex::Regex = regex::Regex::new(r"(-|\+)?[0-9]+[.][0-9]+").unwrap();
-    let ir: regex::Regex = regex::Regex::new(r"(-|\+)?[0-9]+").unwrap();
-    if nr.is_match(s) {
+    lazy_static! {
+        static ref NR: regex::Regex = regex::Regex::new(r"(-|\+)?[0-9]+[.][0-9]+").unwrap();
+        static ref IR: regex::Regex = regex::Regex::new(r"(-|\+)?[0-9]+").unwrap();
+    }
+    if NR.is_match(s) {
         return match s.parse() {
             Ok(x) => TokenValue::FLOAT(x),
             Err(_) => TokenValue::SYMBOL(Arc::new(s.to_string())),
         };
     }
-    if ir.is_match(s) {
+    if IR.is_match(s) {
         if s.chars().nth(0).unwrap() == '+' || s.chars().nth(0).unwrap() == '-' {
             return match s.parse() {
                 Ok(x) => TokenValue::INT(x),

@@ -31,7 +31,7 @@ type CommonModuleContext = RefCell<HashMap<String, Arc<ModuleContext>>>;
 
 pub struct ThreadContext {
     pub commonmod: Arc<RwLock<CommonModuleContext>>,
-    pub using_mod: Arc<ModuleContext>,
+    pub using_mod: RefCell<Arc<ModuleContext>>,
     pub framestack: RefCell<Vec<RefCell<Option<Arc<FunctionContext>>>>>,
     pub frame_size: RefCell<usize>,
 }
@@ -68,13 +68,6 @@ impl FunctionContext {
         if let Some(ref x) = self.fun.env {
             return x.load_symbol(sym);
         } else {
-            // 如果没有env，就看global有木有 else
-            let m = self.fun.modu.upgrade().unwrap(); // 逻辑上来说函数的生命周期不可能比模块短，如果是，那就说明有人在骚搞
-            // found Symbol in this ModuleContext
-            if let Some(x) = m.load_symbol(sym) {
-                return Some(x);
-            }
-            // 没有就凉啦
             return None;
         }
     }
@@ -140,11 +133,11 @@ impl ThreadContext {
         // pub type CommonModuleContext = RefCell<HashMap<String, Arc<ModuleContext>>>;
         ThreadContext {
             commonmod: Arc::from(RwLock::from(RefCell::from(HashMap::new()))),
-            using_mod: Arc::from(ModuleContext {
+            using_mod: RefCell::from(Arc::from(ModuleContext {
                 path: String::from("<Nil>"),
                 expr: Vec::new(),
                 vtab: RefCell::from(HashMap::new()),
-            }),
+            })),
             framestack: RefCell::from(vec![RefCell::from(None); 256]),
             frame_size: RefCell::from(0),
         }
@@ -171,23 +164,27 @@ impl ThreadContext {
                 add(args[0].clone(), args[1].clone())
             },
         })));
-        // 写模块表
-        let mut modu: HashMap<String, Arc<ModuleContext>> = HashMap::new();
-        modu.insert(String::from("System"), Arc::from(ModuleContext {
+
+        let module = Arc::from(ModuleContext {
             path: String::from("System"),
             expr: Vec::new(),
             vtab: RefCell::from(vt),
-        }));
+        });
+        // 写模块表
+        let mut modu: HashMap<String, Arc<ModuleContext>> = HashMap::new();
+        modu.insert(String::from("System"), module.clone());
         ThreadContext {
             commonmod: Arc::from(RwLock::from(RefCell::from(modu))),
-            using_mod: Arc::from(ModuleContext {
-                path: String::from("<Nil>"),
-                expr: Vec::new(),
-                vtab: RefCell::from(HashMap::new()),
-            }),
+            using_mod: RefCell::from(module),
             framestack: RefCell::from(vec![RefCell::from(None); 256]),
             frame_size: RefCell::from(0),
         }
+    }
+
+    pub fn get_stack_top(&self) -> Arc<FunctionContext> {
+        let fs = self.framestack.borrow();
+        let fc = fs[self.frame_size.borrow().clone() - 1].borrow();
+        fc.clone().unwrap()
     }
 
     pub fn load_symbol(&self, sym: _Str) -> Option<Value> {
@@ -200,29 +197,28 @@ impl ThreadContext {
                 format!("{}", &cap[0]),
                 format!("{}", &cap[1])));
         }
+
         // 分情况处理
         if a.len() == 0 {
             // 如果没匹配到
             // found Symbol in this FunctionContext
             if self.frame_size.borrow().clone() != 0 {
-                let a = self.framestack.borrow();
-                let fs = a[self.frame_size.borrow().clone()].borrow();
-                if let Some(x) = fs.clone().unwrap().load_symbol(sym.clone()) {
-                    println!("在函数里边找到了");
+                let fs = self.get_stack_top();
+                if let Some(x) = fs.load_symbol(sym.clone()) {
                     return Some(x);
-                }
-            } else {
-                if let Some(x) = self.using_mod.vtab.borrow_mut().get(sym.as_ref()) {
-                    return Some(x.clone());
                 }
             }
             // found Symbol in 'Prelude' ModuleContext
             let cm = self.commonmod.read().unwrap();
             if let Some(ref x) = cm.borrow().get("System") {
-                return x.load_symbol(sym.clone());
+                if let Some(x) = x.load_symbol(sym.clone()) {
+                    return Some(x);
+                }
             }
             if let Some(ref x) = cm.borrow().get("Prelude") {
-                return x.load_symbol(sym.clone());
+                if let Some(x) = x.load_symbol(sym.clone()) {
+                    return Some(x);
+                }
             }
             return None;
         } else if a.len() == 1 {

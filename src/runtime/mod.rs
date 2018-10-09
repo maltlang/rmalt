@@ -11,6 +11,7 @@ use value::MaltResult;
 use runtime::context::ThreadContext;
 use runtime::context::FunctionContext;
 use value::Handle;
+use func::Function;
 
 pub mod context;
 
@@ -43,16 +44,17 @@ pub fn call_function(this: _Function, ic: &ThreadContext, args: _Tuple) -> MaltR
                 fun: this.clone(),
                 vtab: RefCell::from(HashMap::new()),
             })));
-    ic.frame_size.replace(ic.frame_size.borrow().clone() + 1);
+    let s = ic.frame_size.borrow().clone() + 1;
+    ic.frame_size.replace(s);
 
     if args.len() != this.argn.len() {
         return Err(args_length_exception());
     }
-
-    for i in 0..args.len() - 1 {
-        let a = ic.framestack.borrow_mut();
-        let b = a[ic.frame_size.borrow().clone() - 1].borrow_mut().clone().unwrap();
-        b.vtab.borrow_mut().insert(this.clone().argn[i].clone(), args[i].clone());
+    if args.len() != 0 {
+        for i in 0..args.len() {
+            let b = ic.get_stack_top();
+            b.vtab.borrow_mut().insert(this.clone().argn[i].clone(), args[i].clone());
+        }
     }
 
     let mut r = Value::Nil;
@@ -62,7 +64,8 @@ pub fn call_function(this: _Function, ic: &ThreadContext, args: _Tuple) -> MaltR
     }
 
     ic.framestack.borrow_mut()[ic.frame_size.borrow().clone() - 1].replace(None);
-    ic.frame_size.replace(ic.frame_size.borrow().clone() - 1);
+    let s = ic.frame_size.borrow().clone() - 1;
+    ic.frame_size.replace(s);
     return Ok(r);
 }
 
@@ -76,12 +79,11 @@ impl Native {
 pub fn let_value(ic: &ThreadContext, sym: &String, expr: Value) {
     if ic.frame_size.borrow().clone() == 0 {
         // 表示在顶层作用域
-        ic.using_mod.vtab.borrow_mut().insert(sym.to_string(), expr);
+        let c = ic.using_mod.borrow();
+        c.vtab.borrow_mut().insert(sym.to_string(), expr);
     } else {
         // 表示在函数作用域
-        let fs = ic.framestack.borrow();
-        let fc = fs[ic.frame_size.borrow().clone() - 1].borrow();
-        let sfc = fc.clone().unwrap();
+        let sfc = ic.get_stack_top();
         sfc.vtab.borrow_mut().insert(sym.to_string(), expr);
     }
 }
@@ -178,7 +180,44 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 }
             }
             return Ok(Value::Nil);
-        } else if **x == "lambda".to_string() {} else if **x == "function".to_string() {}
+        } else if **x == "lambda".to_string() {
+            if expr.len() < 3 {
+                return Err(exception("PredicateError", "'lambda' parameters number is less 3.\n\thelp: (lambda <tuple> [<tuple>]*)"));
+            }
+
+            let mut argn: Vec<String> = vec![];
+            if let Value::Tuple(x) = expr[1].clone() {
+                for i in x.iter() {
+                    if let Value::Symbol(x) = i {
+                        argn.push(x.to_string());
+                    } else {
+                        return Err(exception("PredicateError", "'lambda' defined function parameters list tiem is not symbol."));
+                    }
+                }
+            } else {
+                return Err(exception("PredicateError", "'lambda' defined function parameters list is not tuple"));
+            }
+
+            let mut e: Vec<Value> = vec![];
+            for (i, v) in expr.iter().enumerate() {
+                if i > 1 {
+                    e.push(v.clone());
+                }
+            }
+
+            let f = Function {
+                modu: Arc::downgrade(&ic.using_mod.borrow()),
+                name: String::from("<lambda>"),
+                expr: e,
+                argn,
+                env: if ic.frame_size.borrow().clone() != 0 {
+                    Some(ic.get_stack_top())
+                } else {
+                    None
+                },
+            };
+            return Ok(Value::Function(Handle::from(f)));
+        } else if **x == "function".to_string() {}
         // for!是不需要存在的！
         //追加：其实while!也是不需要存在的
     }
