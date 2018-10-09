@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use func::Native;
 //use func::Function;
 use value::Value;
+use value::_Str;
 use value::_Tuple;
 use value::_Function;
 use value::MaltResult;
@@ -31,11 +32,6 @@ fn args_length_exception() -> Value {
 fn symbol_not_found_exception(sym: &str) -> Value {
     exception("SymbolError", &("Symbol '".to_string() + sym + "' not found"))
 }
-
-//#[inline]
-//fn object_member_eval_is_not_function_exception() -> Value {
-//    exception("TypeError", "Object member '__eval__' is not function")
-//}
 
 pub fn call_function(this: _Function, ic: &ThreadContext, args: _Tuple) -> MaltResult {
     ic.framestack.borrow_mut()[ic.frame_size.borrow().clone()]
@@ -76,16 +72,35 @@ impl Native {
     }
 }
 
-pub fn let_value(ic: &ThreadContext, sym: &String, expr: Value) {
-    if ic.frame_size.borrow().clone() == 0 {
-        // 表示在顶层作用域
-        let c = ic.using_mod.borrow();
-        c.vtab.borrow_mut().insert(sym.to_string(), expr);
-    } else {
+pub fn set_value(ic: &ThreadContext, sym: _Str, expr: Value) {
+    if ic.frame_size.borrow().clone() != 0 {
         // 表示在函数作用域
         let sfc = ic.get_stack_top();
         sfc.vtab.borrow_mut().insert(sym.to_string(), expr);
+    } else {
+        // 表示在顶层作用域
+        let c = ic.using_mod.borrow();
+        c.vtab.borrow_mut().insert(sym.to_string(), expr);
     }
+}
+
+pub fn let_value(ic: &ThreadContext, sym: _Str, expr: Value) -> Result<(), Value> {
+    if ic.frame_size.borrow().clone() != 0 {
+        let sfc = ic.get_stack_top();
+        if let Some(_) = sfc.vtab.borrow().get(sym.as_ref()) {
+            return Err(exception("LetError", &("In Function '".to_string() + &sfc.fun.name + "' repeat let")));
+        }
+        // 表示在函数作用域
+        sfc.vtab.borrow_mut().insert(sym.to_string(), expr);
+    } else {
+        // 表示在顶层作用域
+        let c = ic.using_mod.borrow();
+        if let Some(_) = c.vtab.borrow().get(sym.as_ref()) {
+            return Err(exception("LetError", &("In Module '".to_string() + &c.path + "' Repeat let")));
+        }
+        c.vtab.borrow_mut().insert(sym.to_string(), expr);
+    }
+    Ok(())
 }
 
 fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
@@ -103,15 +118,15 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             if expr.len() != 3 {
                 return Err(exception("PredicateError", "'let' parameters number is not 2.\n\thelp: (let <symbol> <expr>)"));
             }
-            if let Value::Symbol(ref x) = expr[1].clone() {
+            if let Value::Symbol(x) = expr[1].clone() {
                 let e = expr[2].clone().eval(ic)?;
-                let_value(ic, x, e.clone());
+                //FIXME:let_value(ic, x, e.clone())?;
+                set_value(ic, x, e.clone());
                 return Ok(e);
             } else {
                 return Err(exception("PredicateError", "'let' parameters 1 is not symbol type."));
             }
         } else if **x == "if".to_string() {
-            // TODO: if expr eval
             if expr.len() == 3 {
                 let boolval = expr[1].clone().eval(ic)?;
                 if let Value::Bool(x) = boolval {
@@ -184,7 +199,6 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             if expr.len() < 3 {
                 return Err(exception("PredicateError", "'lambda' parameters number is less 3.\n\thelp: (lambda <tuple> [<tuple>]*)"));
             }
-
             let mut argn: Vec<String> = vec![];
             if let Value::Tuple(x) = expr[1].clone() {
                 for i in x.iter() {
@@ -197,14 +211,12 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             } else {
                 return Err(exception("PredicateError", "'lambda' defined function parameters list is not tuple"));
             }
-
             let mut e: Vec<Value> = vec![];
             for (i, v) in expr.iter().enumerate() {
                 if i > 1 {
                     e.push(v.clone());
                 }
             }
-
             let f = Function {
                 modu: Arc::downgrade(&ic.using_mod.borrow()),
                 name: String::from("<lambda>"),
@@ -217,7 +229,50 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 },
             };
             return Ok(Value::Function(Handle::from(f)));
-        } else if **x == "function".to_string() {}
+        } else if **x == "fun".to_string() {
+            if expr.len() < 4 {
+                return Err(exception("PredicateError", "'lambda' parameters number is less 3.\n\thelp: (lambda <tuple> [<tuple>]*)"));
+            }
+            let name = if let Value::Symbol(name) = expr[1].clone() {
+                name
+            } else {
+                return Err(exception("PredicateError", "'lambda' defined function parameters list tiem is not symbol."));
+            };
+
+            let mut argn: Vec<String> = vec![];
+            if let Value::Tuple(x) = expr[2].clone() {
+                for i in x.iter() {
+                    if let Value::Symbol(x) = i {
+                        argn.push(x.to_string());
+                    } else {
+                        return Err(exception("PredicateError", "'lambda' defined function parameters list tiem is not symbol."));
+                    }
+                }
+            } else {
+                return Err(exception("PredicateError", "'lambda' defined function parameters list is not tuple"));
+            }
+            let mut e: Vec<Value> = vec![];
+            for (i, v) in expr.iter().enumerate() {
+                if i > 2 {
+                    e.push(v.clone());
+                }
+            }
+            let f = Function {
+                modu: Arc::downgrade(&ic.using_mod.borrow()),
+                name: (*name).clone(),
+                expr: e,
+                argn,
+                env: if ic.frame_size.borrow().clone() != 0 {
+                    Some(ic.get_stack_top())
+                } else {
+                    None
+                },
+            };
+            let fv = Value::Function(Handle::from(f));
+            //FIXME:let_value(ic, name, fv.clone())?;
+            set_value(ic, name, fv.clone());
+            return Ok(fv);
+        }
         // for!是不需要存在的！
         //追加：其实while!也是不需要存在的
     }
