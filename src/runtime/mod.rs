@@ -81,41 +81,69 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     if let Value::Symbol(ref x) = expr[0].clone() {
         if **x == "quote".to_string() {
             if expr.len() != 2 {
-                return Err(exception("PredicateError", "'quote' parameters number is not 1"));
+                return Err(exception("PredicateError", "'quote' parameters number is not 1.\n\thelp: (quote <expr>)"));
             }
             return Ok(expr[1].clone());
         } else if **x == "let".to_string() {
             if expr.len() != 3 {
-                return Err(exception("PredicateError", "'quote' parameters number is not 1"));
+                return Err(exception("PredicateError", "'quote' parameters number is not 1.\n\thelp: (let <symbol> <expr>)"));
             }
             if let Value::Symbol(ref x) = expr[1].clone() {
                 let val = expr[2].clone().eval(ic)?;
                 if ic.frame_size.borrow().clone() == 0 {
                     // 表示在顶层作用域
-
-                    ic.using_mod.vtab.borrow_mut().insert(x.to_string(), val);
+                    ic.using_mod.vtab.borrow_mut().insert(x.to_string(), val.clone());
                 } else {
                     // 表示在函数作用域
                     let fs = ic.framestack.borrow();
-                    let fc = fs[ic.frame_size.borrow().clone()-1].borrow();
+                    let fc = fs[ic.frame_size.borrow().clone() - 1].borrow();
                     let sfc = fc.clone().unwrap();
-                    sfc.vtab.borrow_mut().insert(x.to_string(), val);
+                    sfc.vtab.borrow_mut().insert(x.to_string(), val.clone());
                 }
-                return Ok(Value::Nil);
+                return Ok(val);
             } else {
-                return Err(exception("PredicateError", "'let' parameters 1 is not symbol type"));
+                return Err(exception("PredicateError", "'let' parameters 1 is not symbol type."));
             }
         } else if **x == "if".to_string() {
             // TODO: if expr eval
+            if expr.len() == 3 {
+                let boolval = expr[1].clone().eval(ic)?;
+                if let Value::Bool(x) = boolval {
+                    return if x {
+                        expr[2].clone().eval(ic)
+                    } else {
+                        Ok(Value::Nil)
+                    };
+                } else {
+                    return Err(exception("TypeError", "if cond expr is not bool result."));
+                }
+            } else if expr.len() == 4 {
+                let boolval = expr[1].clone().eval(ic)?;
+                if let Value::Bool(x) = boolval {
+                    return if x {
+                        expr[2].clone().eval(ic)
+                    } else {
+                        expr[3].clone().eval(ic)
+                    };
+                } else {
+                    return Err(exception("TypeError", "if cond expr is not bool result."));
+                }
+            } else {
+                return Err(exception("PredicateError", "'if' parameters number is not 2 or 3.\n\thelp: (if <boolexpr>  <thenexpr> [<elseexpr>])"));
+            }
         }
-        // 以下都不是必须的，实现优先级降低
-        //else
-        if **x == "cond".to_string() {
+            /* 以下都不是必须的，实现优先级降低 */ else if **x == "cond".to_string() {
             // TODO: cond expr eval
         } else if **x == "match".to_string() {
             // TODO: match expr eval
         } else if **x == "loop!".to_string() {
-            // TODO: loop expr eval
+            loop {
+                for (i, v) in expr.iter().enumerate() {
+                    if i != 0 {
+                        v.clone().eval(ic)?;
+                    }
+                }
+            }
         } else if **x == "while!".to_string() {
             // TODO: while expr eval
         } else if **x == "for!".to_string() {
@@ -134,7 +162,7 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     } else if let Value::Native(ref x) = &head {
         return x.call_function(ic, Arc::from(r));
     } else {
-        return Err(exception("CallError", "The callee is not function"));
+        return Err(exception("CallError", &("The callee '".to_string() + &head.to_string() + "' is not function")));
     }
 }
 

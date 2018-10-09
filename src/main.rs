@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
-//extern crate core;
 
 use std::io;
 use parser::lexer::lexer;
@@ -31,13 +30,10 @@ fn main() {
                 match parser(tf.as_ref()) {
                     Ok(x) => {
                         for i in x {
-                            //println!("{}", i.to_string());
-                            // /*
                             match i.eval(&ic) {
                                 Ok(o) => println!("{} -> {}", o.get_type(), o.to_string()),
-                                Err(e) => println!("***error: {}", e.to_string()),
+                                Err(e) => println!("{}", e.to_string()),
                             }
-                            // */
                         }
                     }
                     Err((pos, info)) =>

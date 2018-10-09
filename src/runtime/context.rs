@@ -153,6 +153,8 @@ impl ThreadContext {
     pub fn test_new() -> ThreadContext {
         // 写单模块
         let mut vt: HashMap<String, Value> = HashMap::new();
+        vt.insert(String::from("true"), Value::Bool(true));
+        vt.insert(String::from("false"), Value::Bool(false));
         vt.insert(String::from("--version--"), Value::Native(Handle::from(Native {
             name: String::from("--version--"),
             fp: |_ic, _args| {
@@ -171,8 +173,8 @@ impl ThreadContext {
         })));
         // 写模块表
         let mut modu: HashMap<String, Arc<ModuleContext>> = HashMap::new();
-        modu.insert(String::from("Prelude"), Arc::from(ModuleContext {
-            path: String::from("Prelude"),
+        modu.insert(String::from("System"), Arc::from(ModuleContext {
+            path: String::from("System"),
             expr: Vec::new(),
             vtab: RefCell::from(vt),
         }));
@@ -216,6 +218,9 @@ impl ThreadContext {
             }
             // found Symbol in 'Prelude' ModuleContext
             let cm = self.commonmod.read().unwrap();
+            if let Some(ref x) = cm.borrow().get("System") {
+                return x.load_symbol(sym.clone());
+            }
             if let Some(ref x) = cm.borrow().get("Prelude") {
                 return x.load_symbol(sym.clone());
             }
