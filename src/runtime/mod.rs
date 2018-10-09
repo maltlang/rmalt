@@ -84,8 +84,28 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 return Err(exception("PredicateError", "'quote' parameters number is not 1"));
             }
             return Ok(expr[1].clone());
-        }
-        if **x == "if".to_string() {
+        } else if **x == "let".to_string() {
+            if expr.len() != 3 {
+                return Err(exception("PredicateError", "'quote' parameters number is not 1"));
+            }
+            if let Value::Symbol(ref x) = expr[1].clone() {
+                let val = expr[2].clone().eval(ic)?;
+                if ic.frame_size.borrow().clone() == 0 {
+                    // 表示在顶层作用域
+
+                    ic.using_mod.vtab.borrow_mut().insert(x.to_string(), val);
+                } else {
+                    // 表示在函数作用域
+                    let fs = ic.framestack.borrow();
+                    let fc = fs[ic.frame_size.borrow().clone()-1].borrow();
+                    let sfc = fc.clone().unwrap();
+                    sfc.vtab.borrow_mut().insert(x.to_string(), val);
+                }
+                return Ok(Value::Nil);
+            } else {
+                return Err(exception("PredicateError", "'let' parameters 1 is not symbol type"));
+            }
+        } else if **x == "if".to_string() {
             // TODO: if expr eval
         }
         // 以下都不是必须的，实现优先级降低

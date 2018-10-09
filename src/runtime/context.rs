@@ -19,7 +19,7 @@ pub struct ModuleContext {
     pub path: String,
     // 其实可以不用这个字段的，但我要codegen
     pub expr: Vec<Value>,
-    pub vtab: HashMap<String, Value>, // env (var table)
+    pub vtab: RefCell<HashMap<String, Value>>, // env (var table)
 }
 
 pub struct FunctionContext {
@@ -51,7 +51,7 @@ pub struct ThreadContext {
 
 impl ModuleContext {
     pub fn load_symbol(&self, sym: _Str) -> Option<Value> {
-        if let Some(ref x) = self.vtab.get(sym.as_ref()) {
+        if let Some(ref x) = self.vtab.borrow().get(sym.as_ref()) {
             return Some((*x).clone());
         }
         None
@@ -141,9 +141,9 @@ impl ThreadContext {
         ThreadContext {
             commonmod: Arc::from(RwLock::from(RefCell::from(HashMap::new()))),
             using_mod: Arc::from(ModuleContext {
-                path: String::from("__none__"),
+                path: String::from("<Nil>"),
                 expr: Vec::new(),
-                vtab: HashMap::new(),
+                vtab: RefCell::from(HashMap::new()),
             }),
             framestack: RefCell::from(vec![RefCell::from(None); 256]),
             frame_size: RefCell::from(0),
@@ -153,15 +153,15 @@ impl ThreadContext {
     pub fn test_new() -> ThreadContext {
         // 写单模块
         let mut vt: HashMap<String, Value> = HashMap::new();
-        vt.insert(String::from("__version__"), Value::Native(Handle::from(Native {
-            name: String::from("__version__"),
+        vt.insert(String::from("--version--"), Value::Native(Handle::from(Native {
+            name: String::from("--version--"),
             fp: |_ic, _args| {
                 let a = vec![Value::UInt(0), Value::UInt(0)];
                 Ok(Value::Tuple(Handle::from(a)))
             },
         })));
         vt.insert(String::from("+"), Value::Native(Handle::from(Native {
-            name: String::from("__add__"),
+            name: String::from("--add--"),
             fp: |_ic, args| {
                 if args.len() != 2 {
                     return Err(args_length_exception());
@@ -174,14 +174,14 @@ impl ThreadContext {
         modu.insert(String::from("Prelude"), Arc::from(ModuleContext {
             path: String::from("Prelude"),
             expr: Vec::new(),
-            vtab: vt,
+            vtab: RefCell::from(vt),
         }));
         ThreadContext {
             commonmod: Arc::from(RwLock::from(RefCell::from(modu))),
             using_mod: Arc::from(ModuleContext {
-                path: String::from("__none__"),
+                path: String::from("<Nil>"),
                 expr: Vec::new(),
-                vtab: HashMap::new(),
+                vtab: RefCell::from(HashMap::new()),
             }),
             framestack: RefCell::from(vec![RefCell::from(None); 256]),
             frame_size: RefCell::from(0),
@@ -209,6 +209,11 @@ impl ThreadContext {
                     println!("在函数里边找到了");
                     return Some(x);
                 }
+            } else {
+                if let Some(x) = self.using_mod.vtab.borrow_mut().get(sym.as_ref()) {
+                    return Some(x.clone());
+                }
+                return None;
             }
             // found Symbol in 'Prelude' ModuleContext
             let cm = self.commonmod.read().unwrap();
