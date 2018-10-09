@@ -132,7 +132,24 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 return Err(exception("PredicateError", "'if' parameters number is not 2 or 3.\n\thelp: (if <boolexpr>  <thenexpr> [<elseexpr>])"));
             }
         } else if **x == "cond".to_string() {
-            // TODO: cond expr eval
+            for (i, v) in expr.iter().enumerate() {
+                if i != 0 {
+                    if let Value::Tuple(x) = v.clone() {
+                        if x.len() != 2 {
+                            return Err(exception("PredicateError", "'cond' parameters tuple len() is not 2.\n\thelp: (cond [<boolexpr> <expr>]*)"));
+                        }
+                        // 形式正确
+                        if if let Value::Bool(x) = x[0].clone().eval(ic)? { x } else {
+                            return Err(exception("TypeError", "cond expr is not bool result."));
+                        } {
+                            return x[1].clone().eval(ic);
+                        }
+                    } else {
+                        return Err(exception("PredicateError", "'cond' parameters is not tuple.\n\thelp: (cond [<boolexpr> <expr>]*)"));
+                    }
+                }
+            }
+            return Ok(Value::Nil);
         } else if **x == "match".to_string() {
             // TODO: match expr eval
         } else if **x == "loop!".to_string() {
@@ -158,9 +175,9 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 }
             }
             return Ok(Value::Nil);
-        } else if **x == "for!".to_string() {
-            // TODO: for expr eval
         }
+        // for!是不需要存在的！
+        //追加：其实while!也是不需要存在的
     }
     // fun call
     let mut r: Vec<Value> = vec![];
