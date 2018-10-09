@@ -213,7 +213,6 @@ impl ThreadContext {
                 if let Some(x) = self.using_mod.vtab.borrow_mut().get(sym.as_ref()) {
                     return Some(x.clone());
                 }
-                return None;
             }
             // found Symbol in 'Prelude' ModuleContext
             let cm = self.commonmod.read().unwrap();
