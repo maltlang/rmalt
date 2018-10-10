@@ -21,7 +21,7 @@ Parser is malt parser(default parser)
 
 ## Demo
 malt(malt-repl):
-注意：λ是命令提示符
+λ是命令提示符
 ```malt
 λ --version--
 λ (--version--)
@@ -35,9 +35,14 @@ malt(malt-repl):
 λ (if true 1 2)
 λ (if false 1 2)
 λ (if false 1)
-```
-
-惊喜
-```malt
-λ (loop!)   # 一行代码使你的笔记本变成暖手宝
+λ (cond false [false 2])
+λ (cond false [false 2] [true 3])
+λ (cond false [false 2] [true 3])
+λ (loop!)   # 让你的笔记本变成暖手宝
+λ # ->_->
+λ (let T (lambda [a b] a))
+λ (let F (lambda [a b] b))
+λ (fun A [a b] (a b F))
+λ (fun O [a b] (a T b))
+λ (fun N [v] (v F T))
 ```
