@@ -17,7 +17,7 @@ pub mod runtime;
 
 fn main() {
     // 创建上下文对象
-    let ic = ThreadContext::test_new();
+    let ic = ThreadContext::new();
     loop {
         let _ = std::io::stdout().write("λ ".as_ref());
         let _ = std::io::stdout().flush();

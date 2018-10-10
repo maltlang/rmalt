@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use func::Function;
 use func::Native;
+use runtime::context::ModuleContext;
 
 ///## 类型重命名
 
@@ -11,6 +12,7 @@ pub type _Tuple = Handle<Vec<Value>>;
 pub type _Dict = Handle<HashMap<String, Value>>;
 pub type _Function = Handle<Function>;
 pub type _Native = Handle<Native>;
+pub type _Module = Handle<ModuleContext>;
 
 /*
 pub type _List = Handle<LList>;
@@ -69,6 +71,7 @@ pub enum Value {
     // macros
     Macro(_Function),
     BaseMacro(_Native),
+    Module(_Module),
 }
 
 pub type MaltResult = Result<Value, Value>;
@@ -87,6 +90,7 @@ impl Clone for Value {
             Value::Symbol(ref x) => Value::Symbol(x.clone()),
             Value::String(ref x) => Value::String(x.clone()),
             Value::Object(ref x) => Value::Object(x.clone()),
+            Value::Module(ref x) => Value::Module(x.clone()),
             Value::Macro(ref x) => Value::Macro(x.clone()),
             Value::Native(ref x) => Value::Native(x.clone()),
             Value::Function(ref x) => Value::Function(x.clone()),
@@ -140,7 +144,8 @@ impl ToString for Value {
             Value::Tuple(ref x) => to_string(x),
             Value::Symbol(ref x) => x.to_string(),
             Value::String(ref x) => "\"".to_string() + x + "\"",
-            Value::Object(ref x) =>default_object_to_string(x.clone()),
+            Value::Object(ref x) => default_object_to_string(x.clone()),
+            Value::Module(ref x) => "<module '".to_string() + &x.path + "'>",
             Value::Macro(ref x) => "<macro '".to_string() + &*x.name + "'>",
             Value::Native(ref x) => "<native '".to_string() + &*x.name + "'>",
             Value::Function(ref x) => "<function '".to_string() + &*x.name + "'>",
@@ -168,12 +173,10 @@ impl Value {
     pub fn get_type(&self) -> String {
         match self {
             Value::Nil => "nil".to_string(),
-            //Value::Ast(_) => "ast".to_string(),
             Value::Int(_) => "int".to_string(),
             Value::UInt(_) => "uint".to_string(),
             Value::Bool(_) => "bool".to_string(),
             Value::Char(_) => "char".to_string(),
-            //Value::List(_) => "list".to_string(),
             Value::Dict(_) => "dict".to_string(),
             Value::Float(_) => "float".to_string(),
             Value::Tuple(_) => "tuple".to_string(),
@@ -184,6 +187,7 @@ impl Value {
             Value::Native(_) => "function".to_string(),
             Value::Macro(_) |
             Value::BaseMacro(_) => "macro".to_string(),
+            Value::Module(_) => "module".to_string(),
         }
     }
 }
