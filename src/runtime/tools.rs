@@ -31,7 +31,11 @@ pub fn let_value(ic: &ThreadContext, sym: _Str, expr: Value) -> Result<(), Value
     if ic.frame_size.borrow().clone() != 0 {
         let sfc = ic.get_stack_top();
         if let Some(_) = sfc.vtab.borrow().get(sym.as_ref()) {
-            return Err(exception("LetError", &("In Function '".to_string() + &sfc.fun.name + "' repeat let")));
+            return Err(exception("LetError", &("In Function '".to_string() +
+                &sfc.fun.modu.upgrade().unwrap().path +
+                "::" +
+                &sfc.fun.name +
+                "' repeat let")));
         }
         // 表示在函数作用域
         sfc.vtab.borrow_mut().insert(sym.to_string(), expr);
@@ -39,7 +43,7 @@ pub fn let_value(ic: &ThreadContext, sym: _Str, expr: Value) -> Result<(), Value
         // 表示在顶层作用域
         let c = ic.using_mod.borrow();
         if let Some(_) = c.vtab.borrow().get(sym.as_ref()) {
-            return Err(exception("LetError", &("In Module '".to_string() + &c.path + "' Repeat let")));
+            return Err(exception("LetError", &("In Module '".to_string() + &c.path + "' Repeat let value to '" + &sym + "'.")));
         }
         c.vtab.borrow_mut().insert(sym.to_string(), expr);
     }

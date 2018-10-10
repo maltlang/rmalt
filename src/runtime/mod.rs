@@ -3,18 +3,18 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use func::Native;
-//use func::Function;
+use func::Function;
 use value::Value;
 //use value::_Str;
+use value::Handle;
 use value::_Tuple;
 use value::_Function;
 use value::MaltResult;
 use runtime::context::ThreadContext;
 use runtime::context::FunctionContext;
-use value::Handle;
-use func::Function;
 use runtime::tools::exception;
-use runtime::tools::set_value;
+use runtime::tools::let_value;
+//use runtime::tools::set_value;
 
 pub mod tools;
 pub mod context;
@@ -80,13 +80,14 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             }
             return Ok(expr[1].clone());
         } else if **x == "let".to_string() {
+            //FIXME: 由于不是语言core的core，let将被做为函数（在System Module）而不是谓词
             if expr.len() != 3 {
                 return Err(exception("PredicateError", "'let' parameters number is not 2.\n\thelp: (let <symbol> <expr>)"));
             }
             if let Value::Symbol(x) = expr[1].clone() {
                 let e = expr[2].clone().eval(ic)?;
-                //FIXME:let_value(ic, x, e.clone())?;
-                set_value(ic, x, e.clone());
+                let_value(ic, x, e.clone())?;
+                //set_value(ic, x, e.clone());
                 return Ok(e);
             } else {
                 return Err(exception("PredicateError", "'let' parameters 1 is not symbol type."));
@@ -236,8 +237,8 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 },
             };
             let fv = Value::Function(Handle::from(f));
-            //FIXME:let_value(ic, name, fv.clone())?;
-            set_value(ic, name, fv.clone());
+            let_value(ic, name, fv.clone())?;
+            //set_value(ic, name, fv.clone());
             return Ok(fv);
         }
         // for!是不需要存在的！
