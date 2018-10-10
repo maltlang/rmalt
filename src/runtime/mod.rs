@@ -147,6 +147,7 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 }
             }
         } else if **x == "while!".to_string() {
+            /*
             if expr.len() < 2 {
                 return Err(exception("PredicateError", "'while!' parameters number is less 2.\n\thelp: (while! <boolexpr> [<expr>*])"));
             }
@@ -160,6 +161,7 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                 }
             }
             return Ok(Value::Nil);
+            */
         } else if **x == "lambda".to_string() {
             if expr.len() < 3 {
                 return Err(exception("PredicateError", "'lambda' parameters number is less 3.\n\thelp: (lambda <tuple> [<tuple>]*)"));
