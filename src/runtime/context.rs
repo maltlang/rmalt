@@ -52,16 +52,23 @@ impl ModuleContext {
 
 impl FunctionContext {
     pub fn load_symbol(&self, sym: _Str) -> Option<Value> {
-        // 先看看本函数上下文有木有
         if let Some(ref x) = self.vtab.borrow().get(sym.as_ref()) {
+            // 先看看本函数上下文有木有
             return Some((*x).clone());
-        }
-        // 再看看环境里边有木有
-        if let Some(ref x) = self.fun.env {
-            return x.load_symbol(sym);
+        } else if let Some(ref x) = self.fun.env {
+            // 再看看有木有env
+            if let Some(ref x) = x.load_symbol(sym) {
+                // 再看看env有木有
+                return Some((*x).clone());
+            }
         } else {
-            return None;
+            if let Some(ref x) = self.fun.modu.upgrade().unwrap().load_symbol(sym) {
+                // 没有的话看看所在模块有没有
+                return Some((*x).clone());
+            }
         }
+        // 没有就真凉了
+        None
     }
 }
 
@@ -133,7 +140,6 @@ impl ThreadContext {
                     if let Some(x) = fs.load_symbol(sym.clone()) {
                         return Some(x);
                     }
-
                     let w = fs.fun.modu.upgrade().unwrap();
                     if let Some(x) = w.load_symbol(Handle::from("System".to_string())) {
                         if let Value::Module(ref y) = x {
@@ -150,10 +156,10 @@ impl ThreadContext {
                         }
                     }
                 } else {
+                    // 自己这个module里边掏掏看
                     if let Some(x) = self.using_mod.borrow().load_symbol(Handle::from(sym.clone())) {
                         return Some(x);
                     }
-
                     // found Symbol in 'Prelude' ModuleContext
                     if let Some(x) = self.using_mod.borrow().load_symbol(Handle::from("System".to_string())) {
                         if let Value::Module(ref y) = x {
