@@ -101,7 +101,8 @@ impl ThreadContext {
 
     pub fn load_symbol(&self, sym: _Str) -> Option<Value> {
         lazy_static! {
-            static ref RE: Regex = Regex::new(r"(.*)::(.*)").unwrap();
+            // 分隔符
+            static ref RE: Regex = Regex::new(r"(.*)\.(.*)").unwrap();
         }
         match RE.captures(sym.as_ref()) {
             Some(x) => {

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use func::Function;
 use func::Native;
 use runtime::context::ModuleContext;
+use runtime::tools::exception;
 
 ///## 类型重命名
 
@@ -169,6 +170,16 @@ impl Value {
         }
     }
 
+    pub fn is_number(&self) -> bool {
+        match self {
+            Value::Int(_) |
+            Value::UInt(_) |
+            Value::Bool(_) |
+            Value::Float(_) => true,
+            _ => false,
+        }
+    }
+
     // get value type -> string
     pub fn get_type(&self) -> String {
         match self {
@@ -186,8 +197,54 @@ impl Value {
             Value::Function(_) |
             Value::Native(_) => "function".to_string(),
             Value::Macro(_) |
-            Value::BaseMacro(_) => "macro".to_string(),
+            Value::BaseMacro
+            (_) => "macro".to_string(),
             Value::Module(_) => "module".to_string(),
+        }
+    }
+
+    pub fn to_uint(&self) -> MaltResult {
+        match self {
+            Value::Bool(x) => Ok(Value::UInt(*x as u64)),
+            Value::Int(x) => Ok(Value::UInt(*x as u64)),
+            Value::UInt(x) => Ok(Value::UInt(*x as u64)),
+            Value::Char(x) => Ok(Value::UInt(*x as u64)),
+            Value::Float(x) => Ok(Value::UInt(*x as u64)),
+            //MIFME: Value::Object
+            _ => Err(exception("TypeError", "This value cannot be effectively converted to uint")),
+        }
+    }
+
+    pub fn to_int(&self) -> MaltResult {
+        match self {
+            Value::Bool(x) => Ok(Value::Int(*x as i64)),
+            Value::Int(x) => Ok(Value::Int(*x as i64)),
+            Value::UInt(x) => Ok(Value::Int(*x as i64)),
+            Value::Char(x) => Ok(Value::Int(*x as i64)),
+            Value::Float(x) => Ok(Value::Int(*x as i64)),
+            //MIXME: Value::Object
+            _ => Err(exception("TypeError", "This value cannot be effectively converted to int")),
+        }
+    }
+
+    pub fn to_float(&self) -> MaltResult {
+        match self {
+            Value::Int(x) => Ok(Value::Float(*x as f64)),
+            Value::UInt(x) => Ok(Value::Float(*x as f64)),
+            Value::Float(x) => Ok(Value::Float(*x as f64)),
+            //MIXME: Value::Object
+            _ => Err(exception("TypeError", "This value cannot be effectively converted to float")),
+        }
+    }
+
+    pub fn to_char(&self) -> MaltResult {
+        match self {
+            Value::Bool(x) => Ok(Value::Char(*x as u8 as char)),
+            Value::Int(x) => Ok(Value::Char(*x as u8 as char)),
+            Value::UInt(x) => Ok(Value::Char(*x as u8 as char)),
+            Value::Char(x) => Ok(Value::Char(*x as u8 as char)),
+            //MIXME: Value::String, Value::Object
+            _ => Err(exception("TypeError", "This value cannot be effectively converted to char")),
         }
     }
 }
