@@ -174,7 +174,6 @@ impl Value {
         match self {
             Value::Int(_) |
             Value::UInt(_) |
-            Value::Bool(_) |
             Value::Float(_) => true,
             _ => false,
         }

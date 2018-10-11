@@ -10,7 +10,7 @@ use value::_Str;
 
 pub fn exception(class: &str, info: &str) -> Value {
     let mut r: HashMap<String, Value> = HashMap::new();
-    r.insert(String::from("__class__"), Value::Symbol(Handle::from(String::from(class))));
+    r.insert(String::from("__class__"), Value::String(Handle::from(String::from(class))));
     r.insert(String::from("__info__"), Value::String(Handle::from(String::from(info))));
     Value::Object(Handle::from(r))
 }

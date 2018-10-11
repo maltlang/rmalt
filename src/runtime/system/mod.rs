@@ -13,6 +13,7 @@ use runtime::tools::exception;
 use runtime::tools::num_to_float;
 use runtime::tools::num_to_uint;
 use runtime::tools::num_to_int;
+use value::_Tuple;
 
 pub fn system_module() -> ModuleContext {
     let mut vt: HashMap<String, Value> = HashMap::new();
@@ -49,6 +50,13 @@ pub fn system_module() -> ModuleContext {
                 }
             }
             return Err(args_length_exception());
+        },
+    })));
+
+    vt.insert(String::from("+"), Value::Native(Handle::from(Native {
+        name: String::from("+"),
+        fp: |_ic, args| {
+            ex_add(args)
         },
     })));
 
@@ -94,6 +102,69 @@ pub fn system_module() -> ModuleContext {
         path: String::from("System"),
         expr: Vec::new(),
         vtab: RefCell::from(vt),
+    }
+}
+
+fn ex_add(args: _Tuple) -> MaltResult {
+    let mut s = Value::Int(0);
+    if args.len() == 0 {
+        Ok(s)
+    } else {
+        for (i, v) in args.iter().enumerate() {
+            if i == 0 {
+                s = v.clone();
+            } else {
+                if !v.is_number() {
+                    return Err(exception("TypeError", "+ oper parameters type is not number"));
+                }
+                match s {
+                    Value::Int(x) => {
+                        match v {
+                            Value::Int(y) => {
+                                s = Value::Int(x + *y);
+                            }
+                            Value::UInt(y) => {
+                                s = Value::Int(x + (*y as i64));
+                            }
+                            Value::Float(y) => {
+                                s = Value::Float((x as f64) + *y);
+                            }
+                            _ => {}
+                        }
+                    }
+                    Value::UInt(x) => {
+                        match v {
+                            Value::Int(y) => {
+                                s = Value::Int((x as i64) + *y);
+                            }
+                            Value::UInt(y) => {
+                                s = Value::UInt(x + *y);
+                            }
+                            Value::Float(y) => {
+                                s = Value::Float((x as f64) + *y);
+                            }
+                            _ => {}
+                        }
+                    }
+                    Value::Float(x) => {
+                        match v {
+                            Value::Int(y) => {
+                                s = Value::Float(x + (*y as f64));
+                            }
+                            Value::UInt(y) => {
+                                s = Value::Float(x + (*y as f64));
+                            }
+                            Value::Float(y) => {
+                                s = Value::Float(x + *y);
+                            }
+                            _ => {}
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        Ok(s)
     }
 }
 
