@@ -269,7 +269,9 @@ impl Value {
         match self {
             Value::Symbol(ref x) => match ic.load_symbol(x.clone()) {
                 Some(x) => Ok(x),
-                None => Err(symbol_not_found_exception(x.as_ref())),
+                None => {
+                    Err(symbol_not_found_exception(x.as_ref()))
+                },
             },
             Value::Object(ref _x) => {
                 /*

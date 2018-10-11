@@ -23,6 +23,9 @@ fn main() {
         let _ = std::io::stdout().flush();
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
+        //input.trim_right();
+        input.trim();
+        //println!("strlen: {}", input.chars().count());
         // lexer
         match lexer(input.as_ref()) {
             Ok(tf) =>
@@ -32,7 +35,7 @@ fn main() {
                         for i in x {
                             match i.eval(&ic) {
                                 Ok(o) => println!("{} -> {}", o.get_type(), o.to_string()),
-                                Err(e) => println!("{}", e.to_string()),
+                                Err(e) => eprintln!("{}", e.to_string()),
                             }
                         }
                     }

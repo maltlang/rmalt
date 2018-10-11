@@ -77,6 +77,15 @@ pub fn lexer(s: &str) -> Result<Vec<Token>, TokenPos> {
                             strbuf.clear();
                         };
                     }
+                    '\0' => {
+                        if (*strbuf).len() > 0 {
+                            rs.push(Token {
+                                val: other_get(&strbuf),
+                                pos: strpos,
+                            });
+                        };
+                        break;
+                    }
                     '\n' => {
                         if (*strbuf).len() > 0 {
                             rs.push(Token {
@@ -266,20 +275,6 @@ pub fn lexer(s: &str) -> Result<Vec<Token>, TokenPos> {
             }
         };
         col += 1;
-    }
-    match mode {
-        Mode::STRING => {
-            return Err(strpos);
-        }
-        Mode::CODE => {
-            if (*strbuf).len() > 0 {
-                rs.push(Token {
-                    val: other_get(&strbuf),
-                    pos: strpos,
-                });
-            };
-        }
-        Mode::NOTE => {}
     }
     Ok(rs)
 }
