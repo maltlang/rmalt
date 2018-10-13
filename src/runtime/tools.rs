@@ -33,7 +33,7 @@ pub fn let_value(ic: &ThreadContext, sym: _Str, expr: Value) -> Result<(), Value
         if let Some(_) = sfc.vtab.borrow().get(sym.as_ref()) {
             return Err(exception("LetError", &("In Function '".to_string() +
                 &sfc.fun.modu.upgrade().unwrap().path +
-                "::" +
+                "." +
                 &sfc.fun.name +
                 "' repeat let")));
         }
