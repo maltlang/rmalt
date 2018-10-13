@@ -24,8 +24,6 @@ fn main() {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         //input.trim_right();
-        input.trim();
-        //println!("strlen: {}", input.chars().count());
         // lexer
         match lexer(input.as_ref()) {
             Ok(tf) =>

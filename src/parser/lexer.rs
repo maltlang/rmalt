@@ -86,6 +86,15 @@ pub fn lexer(s: &str) -> Result<Vec<Token>, TokenPos> {
                         };
                         break;
                     }
+                    '\r' => {
+                        if (*strbuf).len() > 0 {
+                            rs.push(Token {
+                                val: other_get(&strbuf),
+                                pos: strpos,
+                            });
+                        };
+                        break;
+                    }
                     '\n' => {
                         if (*strbuf).len() > 0 {
                             rs.push(Token {
