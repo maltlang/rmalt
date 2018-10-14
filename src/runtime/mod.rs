@@ -69,6 +69,7 @@ impl Native {
     }
 }
 
+#[inline]
 fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     if expr.len() == 0 {
         return Ok(Value::Nil);
@@ -200,7 +201,7 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             return Ok(Value::Function(Handle::from(f)));
         } else if **x == "fun".to_string() {
             if expr.len() < 4 {
-                return Err(exception("PredicateError", "'lambda' parameters number is less 3.\n\thelp: (lambda <tuple> [<tuple>]*)"));
+                return Err(exception("PredicateError", "'lambda' parameters number is less 3.\n\thelp: (fun name <tuple> [<tuple>]*)"));
             }
             let name = if let Value::Symbol(name) = expr[1].clone() {
                 name
@@ -214,11 +215,11 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                     if let Value::Symbol(x) = i {
                         argn.push(x.to_string());
                     } else {
-                        return Err(exception("PredicateError", "'lambda' defined function parameters list tiem is not symbol."));
+                        return Err(exception("PredicateError", "'fun' defined function parameters list tiem is not symbol."));
                     }
                 }
             } else {
-                return Err(exception("PredicateError", "'lambda' defined function parameters list is not tuple"));
+                return Err(exception("PredicateError", "'fun' defined function parameters list is not tuple"));
             }
             let mut e: Vec<Value> = vec![];
             for (i, v) in expr.iter().enumerate() {
@@ -239,13 +240,8 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             };
             let fv = Value::Function(Handle::from(f));
             let_value(ic, name, fv.clone())?;
-            //set_value(ic, name, fv.clone());
             return Ok(fv);
         }
-        // for!是不需要存在的！
-        // 追加：其实while!也是不需要存在的
-
-        // 我觉得我得把模式匹配做出来
     }
     // fun call
     let mut r: Vec<Value> = vec![];
@@ -263,8 +259,28 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     }
 }
 
+#[inline]
+fn compiler_expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
+    if expr.len() == 0 {
+        return Ok(Value::Nil);
+    }
+    let mut r: Vec<Value> = vec![];
+    for i in &*expr {
+        let x = i.compiler_eval(ic)?;
+        r.push(x);
+    }
+    let head = r.remove(0);
+    if let Value::Macro(ref x) = &head {
+        return call_function(x.clone(), ic, Handle::from(r));
+    } else if let Value::BaseMacro(ref x) = &head {
+        return x.call_function(ic, Arc::from(r));
+    } else {
+        r.insert(0, head.clone());
+        return Ok(Value::Tuple(Handle::from(r)));
+    }
+}
+
 impl Value {
-    // 慎用，这玩意会把tuple当成调用来搞
     pub fn eval(&self, ic: &ThreadContext) -> MaltResult {
         match self {
             Value::Symbol(ref x) => match ic.load_symbol(x.clone()) {
@@ -273,22 +289,16 @@ impl Value {
                     Err(symbol_not_found_exception(x.as_ref()))
                 },
             },
-            Value::Object(ref _x) => {
-                /*
-                if let Some(y) = x.get("__eval__") {
-                    if let Value::Function(ref z) = y {
-                        call_function(z.clone(), ic, Arc::from(vec![]))
-                    } else if let Value::Native(ref z) = y {
-                        z.call_function(ic, Arc::from(vec![]))
-                    } else {
-                        Err(object_member_eval_is_not_function_exception())
-                    }
-                }
-                */
-                Ok(self.clone())
-            }
             // function call
             Value::Tuple(ref x) => expr_eval(ic, x.clone()),
+            _ => Ok(self.clone())
+        }
+    }
+
+    pub fn compiler_eval(&self, ic: &ThreadContext) -> MaltResult {
+        match self {
+            // macro expansion
+            Value::Tuple(ref x) => compiler_expr_eval(ic, x.clone()),
             _ => Ok(self.clone())
         }
     }

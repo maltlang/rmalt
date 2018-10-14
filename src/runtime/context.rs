@@ -23,6 +23,7 @@ pub struct FunctionContext {
 }
 
 pub struct ThreadContext {
+    system_mod: Handle<ModuleContext>,
     pub using_mod: RefCell<Arc<ModuleContext>>,
     pub framestack: RefCell<Vec<RefCell<Option<Arc<FunctionContext>>>>>,
     pub frame_size: RefCell<usize>,
@@ -77,9 +78,10 @@ impl ThreadContext {
         let module = Handle::from(system_module());
         let mut hs: HashMap<String, Value> = HashMap::new();
         hs.insert("--name--".to_string(), Value::String(Handle::from("--main--".to_string())));
-        hs.insert("System".to_string(), Value::Module(Handle::from(module)));
+        hs.insert("System".to_string(), Value::Module(Handle::from(module.clone())));
 
         ThreadContext {
+            system_mod: module,
             using_mod: RefCell::from(
                 Arc::from(
                     ModuleContext {

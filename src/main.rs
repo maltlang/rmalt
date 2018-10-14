@@ -7,6 +7,7 @@ use parser::lexer::lexer;
 use parser::parser;
 use runtime::context::ThreadContext;
 use std::io::Write;
+use value::Value;
 //use std::collections::HashMap;
 //use std::sync::Arc;
 
@@ -22,7 +23,8 @@ fn main() {
         let _ = std::io::stdout().write("λ ".as_ref());
         let _ = std::io::stdout().flush();
         let mut input = String::new();
-        io::stdin().read_line(&mut input).unwrap();
+        io::stdin().read_line(&mut input).
+            unwrap();
         //input.trim_right();
         // lexer
         match lexer(input.as_ref()) {
@@ -31,7 +33,14 @@ fn main() {
                 match parser(tf.as_ref()) {
                     Ok(x) => {
                         for i in x {
-                            match i.eval(&ic) {
+                            let o = match i.compiler_eval(&ic) {
+                                Ok(o) => o,
+                                Err(e) => {
+                                    eprintln!("{}", e.to_string());
+                                    Value::Nil
+                                }
+                            };
+                            match o.eval(&ic) {
                                 Ok(o) => println!("{} -> {}", o.get_type(), o.to_string()),
                                 Err(e) => eprintln!("{}", e.to_string()),
                             }
