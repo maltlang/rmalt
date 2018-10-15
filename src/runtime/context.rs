@@ -8,7 +8,7 @@ use value::Value;
 use value::Handle;
 use value::_Str;
 use value::_Function;
-use runtime::system::system_module;
+use runtime::prelude::system_module;
 
 pub struct ModuleContext {
     pub path: String,

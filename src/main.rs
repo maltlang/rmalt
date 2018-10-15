@@ -8,6 +8,7 @@ use parser::parser;
 use runtime::context::ThreadContext;
 use std::io::Write;
 use value::Value;
+use runtime::tools::exception_to_string;
 //use std::collections::HashMap;
 //use std::sync::Arc;
 
@@ -42,7 +43,10 @@ fn main() {
                             };
                             match o.eval(&ic) {
                                 Ok(o) => println!("{} -> {}", o.get_type(), o.to_string()),
-                                Err(e) => eprintln!("{}", e.to_string()),
+                                Err(e) => match exception_to_string(e.clone()) {
+                                    Some(x) => eprintln!("{}", x),
+                                    None => eprintln!("exception {}", e.to_string())
+                                },
                             }
                         }
                     }
