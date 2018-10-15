@@ -1,5 +1,6 @@
 # Malt (rMalt)
 The rust implementation of malt programming language
+![avatar](https://coveralls.io/repos/github/maltlang/rmalt/badge.svg?branch=master)
 
 ## Parser
 Parser is malt parser(default parser)
