@@ -1,6 +1,9 @@
-# Malt (rMalt)
-The rust implementation of malt programming language
-![avatar](https://coveralls.io/repos/github/maltlang/rmalt/badge.svg?branch=master)
+<h1 align="center">
+  <a href="https://github.com/maltlang/rmalt"><img src="docs/malt.png" alt="Xi Editor" width="256" height="256"/></a><br>
+  <a href="https://github.com/maltlang/rmalt">Malt</a>
+</h1>
+
+<h4 align="center">The rust implementation of malt programming language</h4>
 
 ## Parser
 Parser is malt parser(default parser)
