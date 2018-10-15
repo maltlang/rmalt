@@ -78,7 +78,7 @@ impl ThreadContext {
         let module = Handle::from(system_module());
         let mut hs: HashMap<String, Value> = HashMap::new();
         hs.insert("--name--".to_string(), Value::String(Handle::from("--main--".to_string())));
-        hs.insert("System".to_string(), Value::Module(Handle::from(module.clone())));
+        hs.insert("Prelude".to_string(), Value::Module(Handle::from(module.clone())));
 
         ThreadContext {
             system_mod: module,

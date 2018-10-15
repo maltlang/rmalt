@@ -129,8 +129,34 @@ pub fn system_module() -> ModuleContext {
         },
     })));
 
+    vt.insert(String::from("not"), Value::Native(Handle::from(Native {
+        name: String::from("not"),
+        fp: |_ic, args| {
+            if args.len() != 1 {
+                return Err(exception("CallError", "Function 'not' call parameters size is not 1"));
+            }
+            if let Value::Bool(x) = args[0].clone() {
+                return Ok(Value::Bool(!x));
+            } else {
+                return Err(exception("", ""));
+            }
+        },
+    })));
 
-    // return
+    vt.insert(String::from("not"), Value::Native(Handle::from(Native {
+        name: String::from("not"),
+        fp: |_ic, args| {
+            if args.len() != 1 {
+                return Err(exception("CallError", "Function 'not' call parameters size is not 1"));
+            }
+            if let Value::Bool(x) = args[0].clone() {
+                return Ok(Value::Bool(!x));
+            } else {
+                return Err(exception("", ""));
+            }
+        },
+    })));
+
     ModuleContext {
         path: String::from("Prelude"),
         expr: Vec::new(),
