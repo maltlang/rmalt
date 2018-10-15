@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://github.com/maltlang/rmalt"><img src="docs/malt.png" alt="Xi Editor" width="256" height="256"/></a><br>
+  <a href="https://github.com/maltlang/rmalt"><img src="docs/malt.png" alt="Malt" width="256" height="256"/></a><br>
   <a href="https://github.com/maltlang/rmalt">Malt</a>
 </h1>
 
