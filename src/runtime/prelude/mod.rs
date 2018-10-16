@@ -1,15 +1,17 @@
+use std::io;
+use std::process::exit;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::process::exit;
 
 use func::Native;
 use value::Value;
 use value::Handle;
+use value::MaltResult;
 
 use runtime::args_length_exception;
 use runtime::context::ModuleContext;
 use runtime::tools::exception;
-use value::MaltResult;
+use std::io::Write;
 
 pub fn system_module() -> ModuleContext {
     let mut vt: HashMap<String, Value> = HashMap::new();
@@ -54,6 +56,20 @@ pub fn system_module() -> ModuleContext {
         },
     })));
     */
+
+    vt.insert(String::from("raw-input!"), Value::Native(Handle::from(Native {
+        name: String::from("raw-input!"),
+        fp: |_ic, args| {
+            for v in args.iter() {
+                let _ = io::stdout().write(v.to_string().as_ref());
+                let _ = io::stdout().flush();
+            }
+            let mut input = String::new();
+            io::stdin().read_line(&mut input).
+                unwrap();
+            Ok(Value::String(Handle::from(input)))
+        },
+    })));
 
     vt.insert(String::from("println!"), Value::Native(Handle::from(Native {
         name: String::from("println!"),
