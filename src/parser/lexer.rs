@@ -1,9 +1,10 @@
 extern crate regex;
 
+use std::sync::Arc;
+
 use parser::token::TokenValue;
 use parser::token::TokenPos;
 use parser::token::Token;
-use std::sync::Arc;
 use value::Handle;
 
 //use regex::Regex;

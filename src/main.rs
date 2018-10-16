@@ -3,14 +3,13 @@ extern crate lazy_static;
 extern crate regex;
 
 use std::io;
+use std::io::Write;
+
+use value::Value;
 use parser::lexer::lexer;
 use parser::parser;
 use runtime::context::ThreadContext;
-use std::io::Write;
-use value::Value;
 use runtime::tools::exception_to_string;
-//use std::collections::HashMap;
-//use std::sync::Arc;
 
 pub mod value;
 pub mod func;

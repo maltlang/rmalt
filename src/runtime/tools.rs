@@ -3,9 +3,8 @@ use std::collections::HashMap;
 
 use value::Value;
 use value::Handle;
-use runtime::context::ThreadContext;
 use value::_Str;
-//use std::sync::mpsc::Handle;
+use runtime::context::ThreadContext;
 
 
 pub fn exception(class: &str, info: &str) -> Value {

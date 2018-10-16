@@ -1,4 +1,5 @@
 use std::io;
+use std::io::Write;
 use std::process::exit;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -7,11 +8,9 @@ use func::Native;
 use value::Value;
 use value::Handle;
 use value::MaltResult;
-
 use runtime::args_length_exception;
 use runtime::context::ModuleContext;
 use runtime::tools::exception;
-use std::io::Write;
 
 pub fn system_module() -> ModuleContext {
     let mut vt: HashMap<String, Value> = HashMap::new();

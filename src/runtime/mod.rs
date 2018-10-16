@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use func::Native;
 use func::Function;
 use value::Value;
-//use value::_Str;
 use value::Handle;
 use value::_Tuple;
 use value::_Function;
@@ -14,7 +13,6 @@ use runtime::context::ThreadContext;
 use runtime::context::FunctionContext;
 use runtime::tools::exception;
 use runtime::tools::let_value;
-//use runtime::tools::set_value;
 
 pub mod tools;
 pub mod prelude;
