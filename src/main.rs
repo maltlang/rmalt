@@ -27,7 +27,7 @@ pub fn copyright() -> String {
 
 help-list: use = type
 \tuse (help?) get docs (unavailable).
-\tuse (exit!) or try use Ctrl-C quit this process.
+\tuse (exit!) or try use Ctrl-C quit repl.
 ".to_string()
 }
 
