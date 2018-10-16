@@ -20,10 +20,14 @@ pub mod runtime;
 pub fn copyright() -> String {
     "
      __      __       _   _     |  Repo:    github.com/maltlang/rmalt
-    |  \\    /  |___ _| |_| |_   |  Version: Malt(rmalt v0.1 Beta), stdlib(maltlib null), repl(malt-repl null)
+    |  \\    /  |___ _| |_| |_   |  Version: Malt(rmalt v0.1 Beta), std(lyzhstd null), repl(malt-repl null)
     | \\ \\  / / /  _` | |_   _|  |  License: MIT
     | |\\ \\/ /| | |_| | | | |__  |  Author:  lyzh(Zhihang-liu) github.com/Zhihang-Liu
-    |_| \\__/ |_\\___._|_| |___/  |  Target:  all
+    |_| \\__/ |_\\___._|_| |___/  |  Target:  NT | GNU/Linux
+
+help-list: use = type
+\tuse (help?) get docs (unavailable).
+\tuse (exit!) or try use Ctrl-C quit this process.
 ".to_string()
 }
 
