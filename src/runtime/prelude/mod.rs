@@ -32,7 +32,7 @@ pub fn system_module() -> ModuleContext {
     } else if cfg!(target_os = "ios") {
         vt.insert(String::from("-target/os"), Value::Symbol(Handle::from(String::from("ios"))));
     } else {
-        vt.insert(String::from("-target/os"), Value::Symbol(Handle::from(String::from("other"))));
+        vt.insert(String::from("-target/os"), Value::Symbol(Handle::from(String::from("unknown"))));
     }
     if cfg!(target_arch = "x86") {
         vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("x86"))));
@@ -47,7 +47,7 @@ pub fn system_module() -> ModuleContext {
     } else if cfg!(target_arch = "aarch64") {
         vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("aarch64"))));
     } else {
-        vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("Other"))));
+        vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("unknown"))));
     }
     if cfg!(target_env = "gnu") {
         vt.insert(String::from("-target/env"), Value::Symbol(Handle::from(String::from("gnu"))));
@@ -56,8 +56,9 @@ pub fn system_module() -> ModuleContext {
     } else if cfg!(target_env = "musl") {
         vt.insert(String::from("-target/env"), Value::Symbol(Handle::from(String::from("musl"))));
     } else {
-        vt.insert(String::from("-target/env"), Value::Symbol(Handle::from(String::from("other"))));
+        vt.insert(String::from("-target/env"), Value::Symbol(Handle::from(String::from("unknown"))));
     }
+
     if cfg!(target_family = "unix") {
         vt.insert(String::from("-target/family"), Value::Symbol(Handle::from(String::from("unix"))));
     } else if cfg!(target_family = "windows") {
@@ -65,6 +66,7 @@ pub fn system_module() -> ModuleContext {
     } else {
         vt.insert(String::from("-target/family"), Value::Symbol(Handle::from(String::from("Other"))));
     }
+
 
     vt.insert(String::from("nil"), Value::Nil);
 
