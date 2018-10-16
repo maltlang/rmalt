@@ -20,6 +20,52 @@ pub fn system_module() -> ModuleContext {
     vt.insert(String::from("-lang/version"), Value::Tuple(Handle::from(
         vec![Value::UInt(1), Value::UInt(0)])));
 
+    // envs
+    if cfg!(target_os = "linux") {
+        vt.insert(String::from("-target/os"), Value::Symbol(Handle::from(String::from("linux"))));
+    } else if cfg!(target_os = "windows") {
+        vt.insert(String::from("-target/os"), Value::Symbol(Handle::from(String::from("windows"))));
+    } else if cfg!(target_os = "android") {
+        vt.insert(String::from("-target/os"), Value::Symbol(Handle::from(String::from("android"))));
+    } else if cfg!(target_os = "macos") {
+        vt.insert(String::from("-target/os"), Value::Symbol(Handle::from(String::from("macos"))));
+    } else if cfg!(target_os = "ios") {
+        vt.insert(String::from("-target/os"), Value::Symbol(Handle::from(String::from("ios"))));
+    } else {
+        vt.insert(String::from("-target/os"), Value::Symbol(Handle::from(String::from("other"))));
+    }
+    if cfg!(target_arch = "x86") {
+        vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("x86"))));
+    } else if cfg!(target_arch = "x86_64") {
+        vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("x86_64"))));
+    } else if cfg!(target_arch = "arm") {
+        vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("arm"))));
+    } else if cfg!(target_arch = "powerpc") {
+        vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("powerpc"))));
+    } else if cfg!(target_arch = "powerpc64") {
+        vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("powerpc64"))));
+    } else if cfg!(target_arch = "aarch64") {
+        vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("aarch64"))));
+    } else {
+        vt.insert(String::from("-target/arch"), Value::Symbol(Handle::from(String::from("Other"))));
+    }
+    if cfg!(target_env = "gnu") {
+        vt.insert(String::from("-target/env"), Value::Symbol(Handle::from(String::from("gnu"))));
+    } else if cfg!(target_env = "msvc") {
+        vt.insert(String::from("-target/env"), Value::Symbol(Handle::from(String::from("msvc"))));
+    } else if cfg!(target_env = "musl") {
+        vt.insert(String::from("-target/env"), Value::Symbol(Handle::from(String::from("musl"))));
+    } else {
+        vt.insert(String::from("-target/env"), Value::Symbol(Handle::from(String::from("other"))));
+    }
+    if cfg!(target_family = "unix") {
+        vt.insert(String::from("-target/family"), Value::Symbol(Handle::from(String::from("unix"))));
+    } else if cfg!(target_family = "windows") {
+        vt.insert(String::from("-target/family"), Value::Symbol(Handle::from(String::from("windows"))));
+    } else {
+        vt.insert(String::from("-target/family"), Value::Symbol(Handle::from(String::from("Other"))));
+    }
+
     vt.insert(String::from("nil"), Value::Nil);
 
     vt.insert(String::from("true"), Value::Bool(true));
