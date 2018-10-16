@@ -86,7 +86,9 @@ pub fn system_module() -> ModuleContext {
         name: String::from("println!"),
         fp: |_ic, args| {
             for v in args.iter() {
-                println!("{}", v.to_string());
+                let _ = io::stdout().write(v.to_string().as_ref());
+                let _ = io::stdout().write("\n".as_ref());
+                let _ = io::stdout().flush();
             }
             Ok(Value::Nil)
         },
