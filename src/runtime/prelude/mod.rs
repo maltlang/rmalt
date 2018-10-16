@@ -11,13 +11,14 @@ use runtime::context::ModuleContext;
 use runtime::tools::exception;
 use value::MaltResult;
 
-
 pub fn system_module() -> ModuleContext {
     let mut vt: HashMap<String, Value> = HashMap::new();
     vt.insert(String::from("-module-name"), Value::Symbol(Handle::from(String::from("Prelude"))));
 
     vt.insert(String::from("-lang/version"), Value::Tuple(Handle::from(
         vec![Value::UInt(1), Value::UInt(0)])));
+
+    vt.insert(String::from("nil"), Value::Nil);
 
     vt.insert(String::from("true"), Value::Bool(true));
     vt.insert(String::from("false"), Value::Bool(false));
@@ -39,6 +40,28 @@ pub fn system_module() -> ModuleContext {
                 }
             }
             return Err(args_length_exception());
+        },
+    })));
+
+    /*
+    vt.insert(String::from("print!"), Value::Native(Handle::from(Native {
+        name: String::from("print!"),
+        fp: |_ic, args| {
+            for v in args.iter() {
+                io::stdout().write(v.to_string().as_bytes()).expect("*** io-error");
+            }
+            Ok(Value::Nil)
+        },
+    })));
+    */
+
+    vt.insert(String::from("println!"), Value::Native(Handle::from(Native {
+        name: String::from("println!"),
+        fp: |_ic, args| {
+            for v in args.iter() {
+                println!("{}", v.to_string());
+            }
+            Ok(Value::Nil)
         },
     })));
 
@@ -129,17 +152,35 @@ pub fn system_module() -> ModuleContext {
         },
     })));
 
-    vt.insert(String::from("not"), Value::Native(Handle::from(Native {
-        name: String::from("not"),
+    vt.insert(String::from("and"), Value::Native(Handle::from(Native {
+        name: String::from("and"),
         fp: |_ic, args| {
-            if args.len() != 1 {
-                return Err(exception("CallError", "Function 'not' call parameters size is not 1"));
+            for i in &*args {
+                if let Value::Bool(x) = i {
+                    if !*x {
+                        return Ok(Value::Bool(false));
+                    }
+                } else {
+                    return Err(exception("TypeError", "function 'and' parmeter type is not bool"));
+                }
             }
-            if let Value::Bool(x) = args[0].clone() {
-                return Ok(Value::Bool(!x));
-            } else {
-                return Err(exception("", ""));
+            Ok(Value::Bool(true))
+        },
+    })));
+
+    vt.insert(String::from("or"), Value::Native(Handle::from(Native {
+        name: String::from("or"),
+        fp: |_ic, args| {
+            for i in &*args {
+                if let Value::Bool(x) = i {
+                    if *x {
+                        return Ok(Value::Bool(true));
+                    }
+                } else {
+                    return Err(exception("TypeError", "function 'or' parmeter type is not bool"));
+                }
             }
+            Ok(Value::Bool(false))
         },
     })));
 
@@ -147,12 +188,12 @@ pub fn system_module() -> ModuleContext {
         name: String::from("not"),
         fp: |_ic, args| {
             if args.len() != 1 {
-                return Err(exception("CallError", "Function 'not' call parameters size is not 1"));
+                return Ok(Value::Bool(false));
             }
             if let Value::Bool(x) = args[0].clone() {
                 return Ok(Value::Bool(!x));
             } else {
-                return Err(exception("", ""));
+                return Err(exception("TypeError", "function 'not' parmeter type is not bool"));
             }
         },
     })));

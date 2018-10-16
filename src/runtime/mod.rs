@@ -262,7 +262,7 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
 #[inline]
 fn compiler_expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     if expr.len() == 0 {
-        return Ok(Value::Nil);
+        return Ok(Value::Tuple(Handle::from(vec![])));
     }
     let mut r: Vec<Value> = vec![];
     for i in &*expr {
