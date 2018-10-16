@@ -57,8 +57,8 @@ pub fn system_module() -> ModuleContext {
     })));
     */
 
-    vt.insert(String::from("raw-input!"), Value::Native(Handle::from(Native {
-        name: String::from("raw-input!"),
+    vt.insert(String::from("input!"), Value::Native(Handle::from(Native {
+        name: String::from("input!"),
         fp: |_ic, args| {
             for v in args.iter() {
                 let _ = io::stdout().write(v.to_string().as_ref());
@@ -68,6 +68,17 @@ pub fn system_module() -> ModuleContext {
             io::stdin().read_line(&mut input).
                 unwrap();
             Ok(Value::String(Handle::from(input)))
+        },
+    })));
+
+    vt.insert(String::from("print!"), Value::Native(Handle::from(Native {
+        name: String::from("print!"),
+        fp: |_ic, args| {
+            for v in args.iter() {
+                let _ = io::stdout().write(v.to_string().as_ref());
+                let _ = io::stdout().flush();
+            }
+            Ok(Value::Nil)
         },
     })));
 
