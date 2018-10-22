@@ -199,12 +199,12 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             return Ok(Value::Function(Handle::from(f)));
         } else if **x == "fun".to_string() {
             if expr.len() < 4 {
-                return Err(exception("PredicateError", "'lambda' parameters number is less 3.\n\thelp: (fun name <tuple> [<tuple>]*)"));
+                return Err(exception("PredicateError", "'fun' parameters number is less 3.\n\thelp: (fun name <tuple> [<tuple>]*)"));
             }
             let name = if let Value::Symbol(name) = expr[1].clone() {
                 name
             } else {
-                return Err(exception("PredicateError", "'lambda' defined function parameters list tiem is not symbol."));
+                return Err(exception("PredicateError", "'fun' defined function parameters list tiem is not symbol."));
             };
 
             let mut argn: Vec<String> = vec![];
@@ -257,11 +257,59 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     }
 }
 
+/*
 #[inline]
 fn compiler_expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     if expr.len() == 0 {
         return Ok(Value::Tuple(Handle::from(vec![])));
     }
+
+    if let Value::Symbol(ref x) = expr[0].clone() {
+        if **x == "macro".to_string() {
+            if expr.len() < 4 {
+                return Err(exception("PredicateError", "'macro' parameters number is less 3.\n\thelp: (fun name <tuple> [<tuple>]*)"));
+            }
+            let name = if let Value::Symbol(name) = expr[1].clone() {
+                name
+            } else {
+                return Err(exception("PredicateError", "'macro' defined function parameters list tiem is not symbol."));
+            };
+
+            let mut argn: Vec<String> = vec![];
+            if let Value::Tuple(x) = expr[2].clone() {
+                for i in x.iter() {
+                    if let Value::Symbol(x) = i {
+                        argn.push(x.to_string());
+                    } else {
+                        return Err(exception("PredicateError", "'macro' defined function parameters list tiem is not symbol."));
+                    }
+                }
+            } else {
+                return Err(exception("PredicateError", "'macro' defined function parameters list is not tuple"));
+            }
+            let mut e: Vec<Value> = vec![];
+            for (i, v) in expr.iter().enumerate() {
+                if i > 2 {
+                    e.push(v.clone());
+                }
+            }
+            let f = Function {
+                modu: Arc::downgrade(&ic.using_mod.borrow()),
+                name: (*name).clone(),
+                expr: e,
+                argn,
+                env: if ic.frame_size.borrow().clone() != 0 {
+                    Some(ic.get_stack_top())
+                } else {
+                    None
+                },
+            };
+            let fv = Value::Macro(Handle::from(f));
+            let_value(ic, name, fv.clone())?;
+            return Ok(fv);
+        }
+    }
+
     let mut r: Vec<Value> = vec![];
     for i in &*expr {
         let x = i.compiler_eval(ic)?;
@@ -277,6 +325,7 @@ fn compiler_expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
         return Ok(Value::Tuple(Handle::from(r)));
     }
 }
+*/
 
 impl Value {
     pub fn eval(&self, ic: &ThreadContext) -> MaltResult {
@@ -285,7 +334,7 @@ impl Value {
                 Some(x) => Ok(x),
                 None => {
                     Err(symbol_not_found_exception(x.as_ref()))
-                },
+                }
             },
             // function call
             Value::Tuple(ref x) => expr_eval(ic, x.clone()),
@@ -293,11 +342,19 @@ impl Value {
         }
     }
 
+    /*
     pub fn compiler_eval(&self, ic: &ThreadContext) -> MaltResult {
         match self {
+            Value::Symbol(ref x) => match ic.load_symbol(x.clone()) {
+                Some(x) => Ok(x),
+                None => {
+                    Err(symbol_not_found_exception(x.as_ref()))
+                },
+            },
             // macro expansion
             Value::Tuple(ref x) => compiler_expr_eval(ic, x.clone()),
             _ => Ok(self.clone())
         }
     }
+    */
 }

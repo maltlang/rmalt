@@ -5,6 +5,15 @@
 
 <h4 align="center">The rust implementation of malt programming language</h4>
 
+---
+
+## 计划表
+- [ ] Init function
+- [ ] Common path system
+- [ ] module load funstions
+- [ ] Pattern matching
+- [ ] More prelude functions
+
 ## BaseType
 - Nil
 - Bool

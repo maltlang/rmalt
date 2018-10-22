@@ -5,7 +5,6 @@ extern crate regex;
 use std::io;
 use std::io::Write;
 
-use value::Value;
 use parser::lexer::lexer;
 use parser::parser;
 use runtime::context::ThreadContext;
@@ -15,6 +14,7 @@ pub mod value;
 pub mod func;
 pub mod parser;
 pub mod runtime;
+
 
 pub fn copyright() -> String {
     let os_info = if cfg!(target_os = "linux") {
@@ -85,14 +85,23 @@ fn main() {
                 match parser(tf.as_ref()) {
                     Ok(x) => {
                         for i in x {
+                            /*
                             let o = match i.compiler_eval(&ic) {
-                                Ok(o) => o,
+                                Ok(o) => {
+                                    //println!("{} -> {}", o.get_type(), o.to_string());
+                                    o
+                                }
                                 Err(e) => {
-                                    eprintln!("{}", e.to_string());
+                                    match exception_to_string(e.clone()) {
+                                        Some(x) => eprintln!("{}", x),
+                                        None => eprintln!("exception {}", e.to_string())
+                                    }
                                     Value::Nil
                                 }
                             };
-                            match o.eval(&ic) {
+                            */
+
+                            match i.eval(&ic) {
                                 Ok(o) => println!("{} -> {}", o.get_type(), o.to_string()),
                                 Err(e) => match exception_to_string(e.clone()) {
                                     Some(x) => eprintln!("{}", x),
