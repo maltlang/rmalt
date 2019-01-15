@@ -3,9 +3,8 @@ use std::collections::HashMap;
 
 use value::Value;
 use value::Handle;
-use runtime::context::ThreadContext;
 use value::_Str;
-//use std::sync::mpsc::Handle;
+use runtime::context::ThreadContext;
 
 
 pub fn exception(class: &str, info: &str) -> Value {
@@ -13,6 +12,27 @@ pub fn exception(class: &str, info: &str) -> Value {
     r.insert(String::from("__class__"), Value::Symbol(Handle::from(String::from(class))));
     r.insert(String::from("__info__"), Value::String(Handle::from(String::from(info))));
     Value::Object(Handle::from(r))
+}
+
+pub fn exception_to_string(o: Value) -> Option<String> {
+    if let Value::Object(x) = o {
+        let c = x.get("__class__");
+        let i = x.get("__info__");
+
+        return match (c, i) {
+            (Some(c), Some(i)) => {
+                match (c, i) {
+                    (Value::Symbol(x), Value::String(y)) => {
+                        let x = &*x.clone();
+                        Some(x.clone() + ": " + y.as_ref())
+                    }
+                    _ => None
+                }
+            }
+            _ => None
+        }
+    }
+    None
 }
 
 pub fn set_value(ic: &ThreadContext, sym: _Str, expr: Value) {
@@ -48,33 +68,4 @@ pub fn let_value(ic: &ThreadContext, sym: _Str, expr: Value) -> Result<(), Value
         c.vtab.borrow_mut().insert(sym.to_string(), expr);
     }
     Ok(())
-}
-
-
-/// libs
-pub fn num_to_uint(n: Value) -> Option<u64> {
-    match n {
-        Value::Float(x) => Some(x as u64),
-        Value::UInt(x) => Some(x as u64),
-        Value::Int(x) => Some(x as u64),
-        _ => None
-    }
-}
-
-pub fn num_to_int(n: Value) -> Option<i64> {
-    match n {
-        Value::Float(x) => Some(x as i64),
-        Value::UInt(x) => Some(x as i64),
-        Value::Int(x) => Some(x as i64),
-        _ => None
-    }
-}
-
-pub fn num_to_float(n: Value) -> Option<f64> {
-    match n {
-        Value::Float(x) => Some(x as f64),
-        Value::UInt(x) => Some(x as f64),
-        Value::Int(x) => Some(x as f64),
-        _ => None
-    }
 }

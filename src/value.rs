@@ -144,7 +144,7 @@ impl ToString for Value {
             Value::Float(ref x) => x.to_string(),
             Value::Tuple(ref x) => to_string(x),
             Value::Symbol(ref x) => x.to_string(),
-            Value::String(ref x) => "\"".to_string() + x + "\"",
+            Value::String(ref x) => /*"\"".to_string() +*/ (**x).clone() /*+ "\""*/,
             Value::Object(ref x) => default_object_to_string(x.clone()),
             Value::Module(ref x) => "<module '".to_string() + &x.path + "'>",
             Value::Macro(ref x) => "<macro '".to_string() + &*x.name + "'>",

@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use func::Native;
 use func::Function;
 use value::Value;
-//use value::_Str;
 use value::Handle;
 use value::_Tuple;
 use value::_Function;
@@ -14,10 +13,9 @@ use runtime::context::ThreadContext;
 use runtime::context::FunctionContext;
 use runtime::tools::exception;
 use runtime::tools::let_value;
-//use runtime::tools::set_value;
 
 pub mod tools;
-pub mod system;
+pub mod prelude;
 pub mod context;
 
 #[inline]
@@ -69,6 +67,7 @@ impl Native {
     }
 }
 
+#[inline]
 fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     if expr.len() == 0 {
         return Ok(Value::Nil);
@@ -200,12 +199,12 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             return Ok(Value::Function(Handle::from(f)));
         } else if **x == "fun".to_string() {
             if expr.len() < 4 {
-                return Err(exception("PredicateError", "'lambda' parameters number is less 3.\n\thelp: (lambda <tuple> [<tuple>]*)"));
+                return Err(exception("PredicateError", "'fun' parameters number is less 3.\n\thelp: (fun name <tuple> [<tuple>]*)"));
             }
             let name = if let Value::Symbol(name) = expr[1].clone() {
                 name
             } else {
-                return Err(exception("PredicateError", "'lambda' defined function parameters list tiem is not symbol."));
+                return Err(exception("PredicateError", "'fun' defined function parameters list tiem is not symbol."));
             };
 
             let mut argn: Vec<String> = vec![];
@@ -214,11 +213,11 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
                     if let Value::Symbol(x) = i {
                         argn.push(x.to_string());
                     } else {
-                        return Err(exception("PredicateError", "'lambda' defined function parameters list tiem is not symbol."));
+                        return Err(exception("PredicateError", "'fun' defined function parameters list tiem is not symbol."));
                     }
                 }
             } else {
-                return Err(exception("PredicateError", "'lambda' defined function parameters list is not tuple"));
+                return Err(exception("PredicateError", "'fun' defined function parameters list is not tuple"));
             }
             let mut e: Vec<Value> = vec![];
             for (i, v) in expr.iter().enumerate() {
@@ -239,13 +238,8 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
             };
             let fv = Value::Function(Handle::from(f));
             let_value(ic, name, fv.clone())?;
-            //set_value(ic, name, fv.clone());
             return Ok(fv);
         }
-        // for!是不需要存在的！
-        // 追加：其实while!也是不需要存在的
-
-        // 我觉得我得把模式匹配做出来
     }
     // fun call
     let mut r: Vec<Value> = vec![];
@@ -263,9 +257,93 @@ fn expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
     }
 }
 
+/*
+#[inline]
+fn compiler_expr_eval(ic: &ThreadContext, expr: _Tuple) -> MaltResult {
+    if expr.len() == 0 {
+        return Ok(Value::Tuple(Handle::from(vec![])));
+    }
+
+    if let Value::Symbol(ref x) = expr[0].clone() {
+        if **x == "macro".to_string() {
+            if expr.len() < 4 {
+                return Err(exception("PredicateError", "'macro' parameters number is less 3.\n\thelp: (fun name <tuple> [<tuple>]*)"));
+            }
+            let name = if let Value::Symbol(name) = expr[1].clone() {
+                name
+            } else {
+                return Err(exception("PredicateError", "'macro' defined function parameters list tiem is not symbol."));
+            };
+
+            let mut argn: Vec<String> = vec![];
+            if let Value::Tuple(x) = expr[2].clone() {
+                for i in x.iter() {
+                    if let Value::Symbol(x) = i {
+                        argn.push(x.to_string());
+                    } else {
+                        return Err(exception("PredicateError", "'macro' defined function parameters list tiem is not symbol."));
+                    }
+                }
+            } else {
+                return Err(exception("PredicateError", "'macro' defined function parameters list is not tuple"));
+            }
+            let mut e: Vec<Value> = vec![];
+            for (i, v) in expr.iter().enumerate() {
+                if i > 2 {
+                    e.push(v.clone());
+                }
+            }
+            let f = Function {
+                modu: Arc::downgrade(&ic.using_mod.borrow()),
+                name: (*name).clone(),
+                expr: e,
+                argn,
+                env: if ic.frame_size.borrow().clone() != 0 {
+                    Some(ic.get_stack_top())
+                } else {
+                    None
+                },
+            };
+            let fv = Value::Macro(Handle::from(f));
+            let_value(ic, name, fv.clone())?;
+            return Ok(fv);
+        }
+    }
+
+    let mut r: Vec<Value> = vec![];
+    for i in &*expr {
+        let x = i.compiler_eval(ic)?;
+        r.push(x);
+    }
+    let head = r.remove(0);
+    if let Value::Macro(ref x) = &head {
+        return call_function(x.clone(), ic, Handle::from(r));
+    } else if let Value::BaseMacro(ref x) = &head {
+        return x.call_function(ic, Arc::from(r));
+    } else {
+        r.insert(0, head.clone());
+        return Ok(Value::Tuple(Handle::from(r)));
+    }
+}
+*/
+
 impl Value {
-    // 慎用，这玩意会把tuple当成调用来搞
     pub fn eval(&self, ic: &ThreadContext) -> MaltResult {
+        match self {
+            Value::Symbol(ref x) => match ic.load_symbol(x.clone()) {
+                Some(x) => Ok(x),
+                None => {
+                    Err(symbol_not_found_exception(x.as_ref()))
+                }
+            },
+            // function call
+            Value::Tuple(ref x) => expr_eval(ic, x.clone()),
+            _ => Ok(self.clone())
+        }
+    }
+
+    /*
+    pub fn compiler_eval(&self, ic: &ThreadContext) -> MaltResult {
         match self {
             Value::Symbol(ref x) => match ic.load_symbol(x.clone()) {
                 Some(x) => Ok(x),
@@ -273,23 +351,10 @@ impl Value {
                     Err(symbol_not_found_exception(x.as_ref()))
                 },
             },
-            Value::Object(ref _x) => {
-                /*
-                if let Some(y) = x.get("__eval__") {
-                    if let Value::Function(ref z) = y {
-                        call_function(z.clone(), ic, Arc::from(vec![]))
-                    } else if let Value::Native(ref z) = y {
-                        z.call_function(ic, Arc::from(vec![]))
-                    } else {
-                        Err(object_member_eval_is_not_function_exception())
-                    }
-                }
-                */
-                Ok(self.clone())
-            }
-            // function call
-            Value::Tuple(ref x) => expr_eval(ic, x.clone()),
+            // macro expansion
+            Value::Tuple(ref x) => compiler_expr_eval(ic, x.clone()),
             _ => Ok(self.clone())
         }
     }
+    */
 }
