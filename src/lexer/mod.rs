@@ -7,6 +7,7 @@ pub enum Token {
     Int(i64),
     UInt(u64),
     Float(f64),
+    Char(char),
 }
 
 fn check_text(raw_src: &str, ln: usize, rn: usize) -> Token {
@@ -52,12 +53,16 @@ fn check_text(raw_src: &str, ln: usize, rn: usize) -> Token {
 }
 
 pub fn lexer(src: &str) -> Option<Vec<Token>> {
+    let mut is_char = false;
     let mut in_string = false;
     let mut have_flag = false;
     let mut flag = 0 as usize;
     let mut res: Vec<Token> = Vec::new();
     for (i, c) in src.chars().enumerate() {
-        if in_string {
+        if is_char {
+            res.push(Token::Char(c));
+            is_char = false;
+        } else if in_string {
             if c == '"' && src.chars().nth(i-1).unwrap() != '/' {
                 res.push(check_text(&src, flag, i+1));
                 in_string = false;
@@ -76,6 +81,12 @@ pub fn lexer(src: &str) -> Option<Vec<Token>> {
                     have_flag = false;
                 }
                 res.push(Token::Rp);
+            } else if c == '\'' {
+                if have_flag {
+                    res.push(check_text(&src, flag, i));
+                    have_flag = false;
+                }
+                is_char = true;
             } else if c == '"' {
                 if have_flag {
                     res.push(check_text(&src, flag, i));

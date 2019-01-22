@@ -1,6 +1,8 @@
-use std::io;
+//use std::io;
 
-mod lexer;
+pub mod lexer;
+pub mod parser;
+pub mod runtime;
 
 pub fn copyright() -> String {
     let os_info = if cfg!(target_os = "linux") {
@@ -56,6 +58,7 @@ pub fn copyright() -> String {
 
 fn main() {
     //println!("{}", copyright());
+    /*
     loop {
         println!(">>> ");
         let mut src = String::new();
@@ -63,4 +66,7 @@ fn main() {
         let token_stream = lexer::lexer(src.trim_right_matches("\r")).unwrap();
         println!("{:?}", token_stream);
     }
+    */
+    let x = parser::run_parser("(defn  \t\nfuck)".to_string());
+    println!("{:?}", x);
 }
