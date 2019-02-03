@@ -1,6 +1,5 @@
 //use std::io;
 
-pub mod lexer;
 pub mod parser;
 pub mod runtime;
 
@@ -67,6 +66,6 @@ fn main() {
         println!("{:?}", token_stream);
     }
     */
-    let x = parser::run_parser("(defn  \t\nfuck)".to_string());
+    let x = parser::once_parser("(1)".to_string());
     println!("{:?}", x);
 }
