@@ -219,13 +219,13 @@ pub fn once_parser(s: String) -> Result<(Option<StringStream>, Ast), ()> {
         ss = ss.and(lp)?.unwrap();
         ss.or(ss.and(defn), ss.and(Box::new(num_s)))?.unwrap().end(rp)
     })
-        /*
-    dook(ss
-        .and(lp)?.unwrap()
-        .and(defn)?.unwrap()
-        .and(empty)?.unwrap()
-        .and(empty_s)?.unwrap()
-        .and(fuck)?.unwrap()
-        .end(rp))
-    */
+    /*
+dook(ss
+    .and(lp)?.unwrap()
+    .and(defn)?.unwrap()
+    .and(empty)?.unwrap()
+    .and(empty_s)?.unwrap()
+    .and(fuck)?.unwrap()
+    .end(rp))
+*/
 }
