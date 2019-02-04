@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::sync::Arc;
 use std::ops::Add;
 use std::ops::BitOr;
 use crate::runtime::Ast;
@@ -285,15 +286,34 @@ fn parse_char_text(ss: &StrStream) -> ParserOut {
     } else {
         None
     }
+}
 
+fn parse_string_text(ss: &StrStream) -> ParserOut {
+    let mut ss1: StrStream = parse_char('"')(ss)?.1;
+    let mut rs = String::new();
+    loop {
+        // if let Some((_, r)) = parse_char('\\')(&ss); 算了我不做转义处理了，这个交给内置函数吧
+        if let Some((_, r)) = parse_not_char('"')(&ss1) {
+            rs.push(ss1.get_head());
+            ss1 = r;
+        } else {
+            ss1 = ss1.slice()?.1;
+            break;
+        }
+    }
+    return Some((Some(Ast {
+        val: Value::CharString(Arc::from(rs)), //?
+        col: ss.col,
+        lin: ss.lin
+    }), ss1.clone()));
 }
 
 ///..............................................................
 
 //#[test]
 pub fn test_parse() {
-    let f = ParserC::new(Box::new(parse_char_text));
-    let r = StrStream::new("'\\\n").map(f.f);
+    let f = ParserC::new(Box::new(parse_string_text));
+    let r = StrStream::new("\"objk\"").map(f.f);
     println!("out: {:?}", r);
 }
 
