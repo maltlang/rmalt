@@ -1,13 +1,13 @@
-use std::rc::Rc;
-use std::sync::Arc;
-use std::ops::Add;
-use std::ops::BitOr;
 use crate::runtime::Ast;
 use crate::runtime::Value;
-use num::BigUint;
-use std::str::FromStr;
 use num::BigInt;
 use num::BigRational;
+use num::BigUint;
+use std::ops::Add;
+use std::ops::BitOr;
+use std::rc::Rc;
+use std::str::FromStr;
+use std::sync::Arc;
 
 type ParserOut = Option<(Option<Ast>, StrStream)>;
 type Parser = Box<Fn(&StrStream) -> ParserOut>;
@@ -146,6 +146,22 @@ impl StrStream {
     }
 }
 
+fn parse_empty(ss: &StrStream) -> ParserOut {
+    let mut ss = ss.clone();
+    loop {
+        if let Some((head, tail)) = ss.slice() {
+            if head == ' ' || head == '\r' || head == '\t' || head == '\n' {
+                ss = tail
+            } else {
+                break;
+            }
+        } else {
+            None
+        }
+    }
+    unimplemented!()
+}
+
 fn parse_char(c: char) -> Parser {
     Box::new(move |ss| {
         if let Some((head, tail)) = ss.slice() {
@@ -214,9 +230,7 @@ fn parse_uint(ss: &StrStream) -> ParserOut {
     let mut ss1 = ss.clone();
     loop {
         if let Some((head, tail)) = ss1.slice() {
-            if (head >= '0' && head <= '9')
-                || head == '_'
-                || head == ','{
+            if (head >= '0' && head <= '9') || head == '_' || head == ',' {
                 ss1 = tail;
             } else {
                 break;
@@ -229,11 +243,14 @@ fn parse_uint(ss: &StrStream) -> ParserOut {
     for c in ss.size..ss1.size {
         s.push(ss.val.chars().nth(c).unwrap())
     }
-    return Some((Some(Ast {
-        val: Value::Uint(BigUint::from_str(&s).unwrap()), //?
-        col: ss.col,
-        lin: ss.lin
-    }), ss1.clone()));
+    return Some((
+        Some(Ast {
+            val: Value::Uint(BigUint::from_str(&s).unwrap()), //?
+            col: ss.col,
+            lin: ss.lin,
+        }),
+        ss1.clone(),
+    ));
 }
 
 fn parse_int(ss: &StrStream) -> ParserOut {
@@ -244,19 +261,21 @@ fn parse_int(ss: &StrStream) -> ParserOut {
         for c in ss.size..r.size {
             s.push(ss.val.chars().nth(c).unwrap())
         }
-        return Some((Some(Ast {
-            val: Value::Int(BigInt::from_str(&s).unwrap()), //?
-            col: ss.col,
-            lin: ss.lin
-        }), r.clone()));
+        return Some((
+            Some(Ast {
+                val: Value::Int(BigInt::from_str(&s).unwrap()), //?
+                col: ss.col,
+                lin: ss.lin,
+            }),
+            r.clone(),
+        ));
     } else {
         None
     }
 }
 
 fn parse_rational(ss: &StrStream) -> ParserOut {
-    let f =
-        (ParserC::new(Box::new(parse_int)) | ParserC::new(Box::new(parse_uint)))
+    let f = (ParserC::new(Box::new(parse_int)) | ParserC::new(Box::new(parse_uint)))
         + ParserC::new(parse_char('/'))
         + (ParserC::new(Box::new(parse_int)) | ParserC::new(Box::new(parse_uint)));
     if let Some((_, r)) = (f.f)(ss) {
@@ -264,11 +283,14 @@ fn parse_rational(ss: &StrStream) -> ParserOut {
         for c in ss.size..r.size {
             s.push(ss.val.chars().nth(c).unwrap())
         }
-        return Some((Some(Ast {
-            val: Value::Rational(BigRational::from_str(&s).unwrap()), //?
-            col: ss.col,
-            lin: ss.lin
-        }), r.clone()));
+        return Some((
+            Some(Ast {
+                val: Value::Rational(BigRational::from_str(&s).unwrap()), //?
+                col: ss.col,
+                lin: ss.lin,
+            }),
+            r.clone(),
+        ));
     } else {
         None
     }
@@ -278,11 +300,14 @@ fn parse_char_text(ss: &StrStream) -> ParserOut {
     let f = (ParserC::new(parse_char('\'')) + ParserC::new(parse_char('\\')))
         | ParserC::new(parse_char('\''));
     if let Some((head, tail)) = (f.f)(ss)?.1.slice() {
-        Some((Some(Ast {
-            val: Value::Char(head),
-            col: ss.col,
-            lin: ss.lin
-        }), tail))
+        Some((
+            Some(Ast {
+                val: Value::Char(head),
+                col: ss.col,
+                lin: ss.lin,
+            }),
+            tail,
+        ))
     } else {
         None
     }
@@ -312,11 +337,14 @@ fn parse_sym(end_char: char) -> Parser {
         for c in ss.size..ss1.size {
             s.push(ss.val.chars().nth(c).unwrap())
         }
-        return Some((Some(Ast {
-            val: Value::CharString(Arc::from(s)), // 可能会加上转义函数
-            col: ss.col,
-            lin: ss.lin
-        }), ss1.clone()));
+        return Some((
+            Some(Ast {
+                val: Value::CharString(Arc::from(s)), // 可能会加上转义函数
+                col: ss.col,
+                lin: ss.lin,
+            }),
+            ss1.clone(),
+        ));
     })
 }
 
