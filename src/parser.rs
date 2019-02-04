@@ -288,7 +288,42 @@ fn parse_char_text(ss: &StrStream) -> ParserOut {
     }
 }
 
+fn parse_sym_raw(end_char: char) -> Parser {
+    Box::new(move |ss: &StrStream| -> ParserOut {
+        fn func(ss: &StrStream, end_char: char) -> ParserOut {
+            if let Some((head, tail)) = ss.slice() {
+                if head == end_char {
+                    Some((None, ss.clone()))
+                } else {
+                    func(&tail, end_char)
+                }
+            } else {
+                None
+            }
+        }
+        func(ss, end_char)
+    })
+}
+
+fn parse_sym(end_char: char) -> Parser {
+    Box::new(move |ss: &StrStream| -> ParserOut {
+        let (_, ss1) = parse_sym_raw(end_char)(ss)?;
+        let mut s = String::new();
+        for c in ss.size..ss1.size {
+            s.push(ss.val.chars().nth(c).unwrap())
+        }
+        return Some((Some(Ast {
+            val: Value::CharString(Arc::from(s)), // 可能会加上转义函数
+            col: ss.col,
+            lin: ss.lin
+        }), ss1.clone()));
+    })
+}
+
 fn parse_string_text(ss: &StrStream) -> ParserOut {
+    let f = ParserC::new(parse_char('"')) + ParserC::new(parse_sym('"'));
+    (f.f)(ss)
+    /*
     let mut ss1: StrStream = parse_char('"')(ss)?.1;
     let mut rs = String::new();
     loop {
@@ -306,6 +341,7 @@ fn parse_string_text(ss: &StrStream) -> ParserOut {
         col: ss.col,
         lin: ss.lin
     }), ss1.clone()));
+    */
 }
 
 ///..............................................................
@@ -313,7 +349,7 @@ fn parse_string_text(ss: &StrStream) -> ParserOut {
 //#[test]
 pub fn test_parse() {
     let f = ParserC::new(Box::new(parse_string_text));
-    let r = StrStream::new("\"objk\"").map(f.f);
+    let r = StrStream::new("\"123\"").map(f.f);
     println!("out: {:?}", r);
 }
 
