@@ -1,0 +1,7 @@
+
+UInt ::= '0' - '9'
+
+Int ::= ('-' | '+') UInt
+
+Rational ::= (Int | UInt) '/' (Int | UInt)
+

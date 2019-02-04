@@ -1,28 +1,103 @@
 use std::rc::Rc;
-use runtime::Ast;
-use runtime::Value;
+use std::ops::Add;
+use std::ops::BitOr;
+use crate::runtime::Ast;
+use crate::runtime::Value;
+use num::BigUint;
+use std::str::FromStr;
+use num::BigInt;
+use num::BigRational;
 
-#[derive(Debug, Clone)]
-pub struct StringStream {
-    size: usize,
-    col: usize,
-    lin: usize,
-    val: Rc<String>,
+type ParserOut = Option<(Option<Ast>, StrStream)>;
+type Parser = Box<Fn(&StrStream) -> ParserOut>;
+
+struct ParserC {
+    f: Parser,
 }
 
-pub type ReturnT<R> = Result<R, ()>;
-pub type Parser<X, Y> = Box<Fn(X) -> ReturnT<Y>>;
-pub type DefaultParser<T> = Parser<StringStream, T>;
-pub type MatchParser = DefaultParser<Option<StringStream>>;
-pub type GetParser = DefaultParser<(Option<StringStream>, Ast)>;
+impl ParserC {
+    fn new(f: Parser) -> Self {
+        Self { f }
+    }
+    fn get(self) -> Parser {
+        self.f
+    }
+    // repeater
+    fn rpt(self, s: usize) -> Self {
+        if s == 0 {
+            Self {
+                f: Box::new(move |ss: &StrStream| -> ParserOut {
+                    let mut sout = ss.clone();
+                    loop {
+                        if let Some((_, tail)) = (self.f)(&sout) {
+                            sout = tail;
+                        } else {
+                            return Some((None, sout.clone()));
+                        }
+                    }
+                }),
+            }
+        } else {
+            Self {
+                f: Box::new(move |ss: &StrStream| -> ParserOut {
+                    let mut r = ss.clone();
+                    for _ in 0..s {
+                        if let Some((_, tail)) = (self.f)(&r) {
+                            r = tail;
+                        } else {
+                            return None;
+                        }
+                    }
+                    Some((None, r))
+                }),
+            }
+        }
+    }
+}
 
-impl StringStream {
-    fn new(s: String) -> Self {
-        StringStream {
+impl Add for ParserC {
+    type Output = ParserC;
+
+    fn add(self, o: Self) -> Self::Output {
+        Self {
+            f: Box::new(move |ss: &StrStream| -> ParserOut {
+                let (_, r) = (self.f)(ss)?;
+                (o.f)(&r)
+            }),
+        }
+    }
+}
+
+impl BitOr for ParserC {
+    type Output = ParserC;
+
+    fn bitor(self, o: Self) -> Self::Output {
+        Self {
+            f: Box::new(move |ss: &StrStream| -> ParserOut {
+                if let Some(r) = (self.f)(ss) {
+                    return Some(r);
+                }
+                (o.f)(ss)
+            }),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct StrStream {
+    size: usize,
+    val: Rc<String>,
+    col: usize,
+    lin: usize,
+}
+
+impl StrStream {
+    fn new(s: &str) -> Self {
+        StrStream {
             size: 0,
             col: 1,
             lin: 1,
-            val: Rc::new(s),
+            val: Rc::new(String::from(s)),
         }
     }
 
@@ -30,202 +105,206 @@ impl StringStream {
         self.val.chars().nth(self.size).unwrap()
     }
 
-    fn next(&self) -> Option<Self> {
-        if self.size + 1 >= self.val.chars().count() {
+    /*
+    fn is_end(&self) -> bool {
+        self.size == self.val.chars().count() - 1
+    }
+    */
+
+    fn safe_get_head(&self) -> Option<char> {
+        self.val.chars().nth(self.size)
+    }
+
+    fn slice(&self) -> Option<(char, Self)> {
+        if self.size == self.val.chars().count() {
             None
         } else {
-            if self.val.chars().nth(self.size + 1).unwrap() == '\n' {
-                Some(
-                    StringStream {
+            Some((
+                self.get_head(),
+                if self.get_head() == '\n' {
+                    Self {
                         size: self.size + 1,
+                        val: self.val.clone(),
                         col: 1,
                         lin: self.lin + 1,
-                        val: self.val.clone(),
-                    })
-            } else {
-                Some(
-                    StringStream {
+                    }
+                } else {
+                    Self {
                         size: self.size + 1,
+                        val: self.val.clone(),
                         col: self.col + 1,
                         lin: self.lin,
-                        val: self.val.clone(),
-                    })
-            }
+                    }
+                },
+            ))
         }
     }
 
-    fn equ(&self, s2: &StringStream) -> Result<Option<StringStream>, ()> {
-        if self.get_head() == s2.get_head() {
-            let (a, b) = (self.next(), s2.next());
-            if a.is_some() && b.is_some() {
-                a.unwrap().equ(&b.unwrap())
-            } else if b.is_none() {
-                Ok(a)
+    fn map(&self, f: Parser) -> ParserOut {
+        f(self)
+    }
+}
+
+fn parse_char(c: char) -> Parser {
+    Box::new(move |ss| {
+        if let Some((head, tail)) = ss.slice() {
+            if head == c {
+                Some((None, tail))
             } else {
-                Err(())
+                None
             }
         } else {
-            Err(())
-        }
-    }
-
-
-    fn and(&self, f: MatchParser) -> Result<Option<StringStream>, ()> {
-        let v: Option<StringStream> = f(self.clone())?;
-        if v.is_some() {
-            Ok(v)
-        } else {
-            Err(())
-        }
-    }
-
-    fn or(&self, p1: Result<Option<StringStream>, ()>, p2: Result<Option<StringStream>, ()>) -> Result<Option<StringStream>, ()> {
-        if p1.is_ok() {
-            p1
-        } else if p2.is_ok() {
-            p2
-        } else {
-            Err(())
-        }
-    }
-
-    fn end(&self, f: MatchParser) -> Result<Option<StringStream>, ()> {
-        f(self.clone())
-    }
-}
-
-fn empty(ss: StringStream) -> Result<Option<StringStream>, ()> {
-    if ss.get_head() == ' ' ||
-        ss.get_head() == '\0' ||
-        ss.get_head() == '\t' ||
-        ss.get_head() == '\n' ||
-        ss.get_head() == '\r' {
-        Ok(ss.next())
-    } else {
-        Err(())
-    }
-}
-
-fn empty_s(ss: StringStream) -> Result<Option<StringStream>, ()> {
-    match empty(ss.clone()) {
-        Ok(x) => match x {
-            Some(x) => empty_s(x),
-            None => Ok(None)
-        }
-        Err(_) => Ok(Some(ss))
-    }
-}
-
-fn num(ss: StringStream) -> Result<Option<StringStream>, ()> {
-    let v = ss.get_head();
-    if v >= '0' && v <= '9' {
-        Ok(ss.next())
-    } else {
-        Err(())
-    }
-}
-
-fn num_s(ss: StringStream) -> Result<Option<StringStream>, ()> {
-    match num(ss.clone()) {
-        Ok(x) => match x {
-            Some(x) => num_s(x),
-            None => Ok(None)
-        }
-        Err(_) => Ok(Some(ss))
-    }
-}
-
-fn char1(c: char) -> MatchParser {
-    Box::new(move |x: StringStream| {
-        if x.get_head() == c {
-            Ok(x.next())
-        } else {
-            Err(())
+            None
         }
     })
 }
 
-fn symbol1(s: String) -> MatchParser {
-    Box::new(move |ss: StringStream| {
-        ss.equ(&StringStream::new(s.clone()))
-    })
-}
-
-// get values
-
-fn numbers(ss: StringStream) -> Result<(Option<StringStream>, Ast), ()> {
-    let num= Box::new(num);
-    let num_s= Box::new(num_s);
-    if let Ok(a) = char1('-')(ss.clone()) {
-        //let a: Option<StringStream> = a;
-        if a.is_some() {
-            let v= a.unwrap().and(num.clone())?.unwrap().and(num_s.clone())?;
-            if v.is_none() {
-                return Ok((None, Ast {
-                    col: ss.col,
-                    lin: ss.lin,
-                    val: Value::Int(1) //FIXME
-                }));
+fn parse_not_char(c: char) -> Parser {
+    Box::new(move |ss| {
+        if let Some((head, tail)) = ss.slice() {
+            if head == c {
+                None
             } else {
-                let a = v.unwrap().and(char1('.'))?.unwrap().and(num)?.unwrap().and(num_s)?;
-                return Ok((a, Ast {
-                    col: ss.col,
-                    lin: ss.lin,
-                    val: Value::Float(1.1) //FIXME
-                }));
+                Some((None, tail))
             }
         } else {
-            return Err(());
+            None
         }
-    } else {
-        let mut v = ss.and(num.clone())?.unwrap().and(num_s.clone())?;
-        if v.is_none() {
-            return Ok((None, Ast {
-                col: ss.col,
-                lin: ss.lin,
-                val: Value::Int(1) //FIXME
-            }));
-        } else {
-            let a = v.unwrap().and(char1('.'))?.unwrap().and(num)?.unwrap().and(num_s)?;
-            return Ok((a, Ast {
-                col: ss.col,
-                lin: ss.lin,
-                val: Value::Float(1.1) //FIXME
-            }));
-        }
-
-    }
-}
-
-// 收尾工作
-
-fn dook(a: Result<Option<StringStream>, ()>) -> Result<(Option<StringStream>, Ast), ()> {
-    match a {
-        Ok(x) => Ok((x, Ast {lin: 0, col: 0, val: Value::Nil})),
-        Err(_) => Err(())
-    }
-}
-
-pub fn once_parser(s: String) -> Result<(Option<StringStream>, Ast), ()> {
-    let _empty = Box::new(empty);
-    let _empty_s = Box::new(empty_s);
-    let lp = char1('(');
-    let defn = symbol1("defn".to_string());
-    let fuck = symbol1("fuck".to_string());
-    let rp = char1(')');
-    let mut ss = StringStream::new(s);
-    //numbers(ss)
-    dook({
-        ss = ss.and(lp)?.unwrap();
-        ss.or(ss.and(defn), ss.and(Box::new(num_s)))?.unwrap().end(rp)
     })
-    /*
-dook(ss
-    .and(lp)?.unwrap()
-    .and(defn)?.unwrap()
-    .and(empty)?.unwrap()
-    .and(empty_s)?.unwrap()
-    .and(fuck)?.unwrap()
-    .end(rp))
+}
+
+fn parse_string(s: &str) -> Parser {
+    parse_string_r(StrStream::new(s))
+}
+
+fn parse_string_r(sst: StrStream) -> Parser {
+    Box::new(move |ss: &StrStream| -> ParserOut {
+        fn rf(sst: &StrStream, ss: &StrStream) -> ParserOut {
+            if let Some((head, tail)) = sst.slice() {
+                rf(&tail, &parse_char(head)(ss)?.1)
+            } else if let None = sst.slice() {
+                Some((None, ss.clone()))
+            } else {
+                None
+            }
+        }
+        rf(&sst, ss)
+    })
+}
+
+/* 直觉上效率更高的算法，最开始写的是这个
+        if let (
+            Some((cead, cail)),
+            Some((head, tail))) =
+        (sst.slice(), ss.slice()) {
+            if head == cead {
+                rf(&cail, &tail)
+            } else {
+                None
+            }
+        } else if let (None, _) = (sst.slice(), ss.slice()) {
+            Some((None, ss.clone()))
+        } else {
+            None
+        }
 */
+
+fn parse_uint(ss: &StrStream) -> ParserOut {
+    let mut ss1 = ss.clone();
+    loop {
+        if let Some((head, tail)) = ss1.slice() {
+            if (head >= '0' && head <= '9')
+                || head == '_'
+                || head == ','{
+                ss1 = tail;
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    let mut s = String::new();
+    for c in ss.size..ss1.size {
+        s.push(ss.val.chars().nth(c).unwrap())
+    }
+    return Some((Some(Ast {
+        val: Value::Uint(BigUint::from_str(&s).unwrap()), //?
+        col: ss.col,
+        lin: ss.lin
+    }), ss1.clone()));
+}
+
+fn parse_int(ss: &StrStream) -> ParserOut {
+    let f = (ParserC::new(parse_char('+')) | ParserC::new(parse_char('-')))
+        + ParserC::new(Box::new(parse_uint));
+    if let Some((_, r)) = (f.f)(ss) {
+        let mut s = String::new();
+        for c in ss.size..r.size {
+            s.push(ss.val.chars().nth(c).unwrap())
+        }
+        return Some((Some(Ast {
+            val: Value::Int(BigInt::from_str(&s).unwrap()), //?
+            col: ss.col,
+            lin: ss.lin
+        }), r.clone()));
+    } else {
+        None
+    }
+}
+
+fn parse_rational(ss: &StrStream) -> ParserOut {
+    let f =
+        (ParserC::new(Box::new(parse_int)) | ParserC::new(Box::new(parse_uint)))
+        + ParserC::new(parse_char('/'))
+        + (ParserC::new(Box::new(parse_int)) | ParserC::new(Box::new(parse_uint)));
+    if let Some((_, r)) = (f.f)(ss) {
+        let mut s = String::new();
+        for c in ss.size..r.size {
+            s.push(ss.val.chars().nth(c).unwrap())
+        }
+        return Some((Some(Ast {
+            val: Value::Rational(BigRational::from_str(&s).unwrap()), //?
+            col: ss.col,
+            lin: ss.lin
+        }), r.clone()));
+    } else {
+        None
+    }
+}
+
+fn parse_char_text(ss: &StrStream) -> ParserOut {
+    let f = (ParserC::new(parse_char('\'')) + ParserC::new(parse_char('\\')))
+        | ParserC::new(parse_char('\''));
+    if let Some((head, tail)) = (f.f)(ss)?.1.slice() {
+        Some((Some(Ast {
+            val: Value::Char(head),
+            col: ss.col,
+            lin: ss.lin
+        }), tail))
+    } else {
+        None
+    }
+
+}
+
+///..............................................................
+
+//#[test]
+pub fn test_parse() {
+    let f = ParserC::new(Box::new(parse_char_text));
+    let r = StrStream::new("'\\\n").map(f.f);
+    println!("out: {:?}", r);
+}
+
+//#[test]
+pub fn test_parse_c() {
+    let r = parse_char('o')(&StrStream::new("opq"));
+    println!("out: {:?}", r);
+}
+
+//#[test]
+pub fn test_parse_str() {
+    let r = parse_string("opq")(&StrStream::new("opq"));
+    println!("out: {:?}", r);
 }
