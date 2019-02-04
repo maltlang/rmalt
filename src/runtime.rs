@@ -12,7 +12,7 @@ struct MStruct {
 
 #[derive(Debug, Clone)]
 pub enum Value {
-    Nil,
+    None,
 
     Uint(BigUint),
     Int(BigInt),
@@ -22,9 +22,8 @@ pub enum Value {
     Char(char),
 
     CharString(Arc<String>),
-    Struct(MStruct),
+    //Struct(MStruct),
     Tuple(Arc<Vec<Value>>),
-    Node(Arc<Ast>),
 }
 
 #[derive(Debug, Clone)]

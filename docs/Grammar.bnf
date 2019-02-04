@@ -1,7 +1,39 @@
+# Malt(rmalt) Grammar
 
-UInt ::= '0' - '9'
+None ::= 'none' ;
 
-Int ::= ('-' | '+') UInt
+Bool ::= 'false' | 'true' ;
 
-Rational ::= (Int | UInt) '/' (Int | UInt)
+Atom ::= Char | CharString | Rational | Int | Uint | Bool | None ;
 
+Tuple ::= '(' Obj (',' Obj)* | ',' ')' ;
+
+Obj ::= Tuple | Atom ;
+
+Call ::= Expr Expr ;
+
+Lambda ::= '\' Mode = Sentences ;
+
+Expr ::= Call | If | Match | Let | Lambda ;
+
+Sentences ::= Expr (('\n', Sentences)* | '\n') ;
+
+#Tag ::= "[<" sym ">]" ;
+
+If ::=
+    "if" Expr "then" Sentence "else" Sentences |
+    "if" Expr "then" Sentence ;
+
+Match ::=
+    "match" Expr "with"
+    ('|' Mode "=>" Expr)*
+
+#Let ::= 'let' Mode = Sentences ;
+
+Module ::= 'module' sym '=' Let* '.';
+
+Open :: "open" String "as" sym
+
+File ::= Open* Module;
+
+Repl ::= Expr
