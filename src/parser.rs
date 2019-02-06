@@ -1,13 +1,19 @@
-use crate::runtime::Ast;
-use crate::runtime::Value;
-use num::BigInt;
-use num::BigRational;
-use num::BigUint;
 use std::ops::Add;
 use std::ops::BitOr;
 use std::rc::Rc;
 use std::str::FromStr;
 use std::sync::Arc;
+
+use num::BigInt;
+use num::BigRational;
+use num::BigUint;
+
+use runtime::Ast;
+use runtime::MFile;
+use runtime::MFunction;
+use runtime::MModule;
+use runtime::Tree;
+use runtime::Value;
 
 type ParserOut = Option<(Option<Ast>, StrStream)>;
 type Parser = Box<Fn(&StrStream) -> ParserOut>;
@@ -29,11 +35,27 @@ impl ParserC {
             Self {
                 f: Box::new(move |ss: &StrStream| -> ParserOut {
                     let mut sout = ss.clone();
+                    let mut r: Vec<Ast> = Vec::new();
+                    /*Ast {
+                        val: Tree::Asts(),
+                        col: ss.col,
+                        lin: ss.lin,
+                    };*/
                     loop {
-                        if let Some((_, tail)) = (self.f)(&sout) {
+                        if let Some((val, tail)) = (self.f)(&sout) {
                             sout = tail;
+                            if let Some(x) = val {
+                                r.push(x);
+                            }
                         } else {
-                            return Some((None, sout.clone()));
+                            return Some((
+                                Some(Ast {
+                                    val: Tree::Asts(r),
+                                    col: ss.col,
+                                    lin: ss.lin,
+                                }),
+                                sout.clone(),
+                            ));
                         }
                     }
                 }),
@@ -93,7 +115,7 @@ pub struct StrStream {
 }
 
 impl StrStream {
-    fn new(s: &str) -> Self {
+    pub fn new(s: &str) -> Self {
         StrStream {
             size: 0,
             col: 1,
@@ -116,7 +138,7 @@ impl StrStream {
         self.val.chars().nth(self.size)
     }
 
-    fn slice(&self) -> Option<(char, Self)> {
+    pub fn slice(&self) -> Option<(char, Self)> {
         if self.size == self.val.chars().count() {
             None
         } else {
@@ -141,7 +163,7 @@ impl StrStream {
         }
     }
 
-    fn map(&self, f: Parser) -> ParserOut {
+    pub fn map(&self, f: Parser) -> ParserOut {
         f(self)
     }
 }
@@ -151,15 +173,14 @@ fn parse_empty(ss: &StrStream) -> ParserOut {
     loop {
         if let Some((head, tail)) = ss.slice() {
             if head == ' ' || head == '\r' || head == '\t' || head == '\n' {
-                ss = tail
+                ss = tail;
             } else {
-                break;
+                return Some((None, ss));
             }
         } else {
-            None
+            return Some((None, ss));
         }
     }
-    unimplemented!()
 }
 
 fn parse_char(c: char) -> Parser {
@@ -226,93 +247,6 @@ fn parse_string_r(sst: StrStream) -> Parser {
         }
 */
 
-fn parse_uint(ss: &StrStream) -> ParserOut {
-    let mut ss1 = ss.clone();
-    loop {
-        if let Some((head, tail)) = ss1.slice() {
-            if (head >= '0' && head <= '9') || head == '_' || head == ',' {
-                ss1 = tail;
-            } else {
-                break;
-            }
-        } else {
-            break;
-        }
-    }
-    let mut s = String::new();
-    for c in ss.size..ss1.size {
-        s.push(ss.val.chars().nth(c).unwrap())
-    }
-    return Some((
-        Some(Ast {
-            val: Value::Uint(BigUint::from_str(&s).unwrap()), //?
-            col: ss.col,
-            lin: ss.lin,
-        }),
-        ss1.clone(),
-    ));
-}
-
-fn parse_int(ss: &StrStream) -> ParserOut {
-    let f = (ParserC::new(parse_char('+')) | ParserC::new(parse_char('-')))
-        + ParserC::new(Box::new(parse_uint));
-    if let Some((_, r)) = (f.f)(ss) {
-        let mut s = String::new();
-        for c in ss.size..r.size {
-            s.push(ss.val.chars().nth(c).unwrap())
-        }
-        return Some((
-            Some(Ast {
-                val: Value::Int(BigInt::from_str(&s).unwrap()), //?
-                col: ss.col,
-                lin: ss.lin,
-            }),
-            r.clone(),
-        ));
-    } else {
-        None
-    }
-}
-
-fn parse_rational(ss: &StrStream) -> ParserOut {
-    let f = (ParserC::new(Box::new(parse_int)) | ParserC::new(Box::new(parse_uint)))
-        + ParserC::new(parse_char('/'))
-        + (ParserC::new(Box::new(parse_int)) | ParserC::new(Box::new(parse_uint)));
-    if let Some((_, r)) = (f.f)(ss) {
-        let mut s = String::new();
-        for c in ss.size..r.size {
-            s.push(ss.val.chars().nth(c).unwrap())
-        }
-        return Some((
-            Some(Ast {
-                val: Value::Rational(BigRational::from_str(&s).unwrap()), //?
-                col: ss.col,
-                lin: ss.lin,
-            }),
-            r.clone(),
-        ));
-    } else {
-        None
-    }
-}
-
-fn parse_char_text(ss: &StrStream) -> ParserOut {
-    let f = (ParserC::new(parse_char('\'')) + ParserC::new(parse_char('\\')))
-        | ParserC::new(parse_char('\''));
-    if let Some((head, tail)) = (f.f)(ss)?.1.slice() {
-        Some((
-            Some(Ast {
-                val: Value::Char(head),
-                col: ss.col,
-                lin: ss.lin,
-            }),
-            tail,
-        ))
-    } else {
-        None
-    }
-}
-
 fn parse_sym_raw(end_char: char) -> Parser {
     Box::new(move |ss: &StrStream| -> ParserOut {
         fn func(ss: &StrStream, end_char: char) -> ParserOut {
@@ -339,7 +273,7 @@ fn parse_sym(end_char: char) -> Parser {
         }
         return Some((
             Some(Ast {
-                val: Value::CharString(Arc::from(s)), // 可能会加上转义函数
+                val: Tree::Symbol(Arc::from(s)), // 可能会加上转义函数
                 col: ss.col,
                 lin: ss.lin,
             }),
@@ -348,9 +282,127 @@ fn parse_sym(end_char: char) -> Parser {
     })
 }
 
+///..............................................................
+
+fn parse_symbol(ss: &StrStream) -> ParserOut {
+    fn func(ss: &StrStream) -> ParserOut {
+        if let Some((head, tail)) = ss.slice() {
+            if head == ' ' || head == '\r' || head == '\t' || head == '\n' {
+                Some((None, ss.clone()))
+            } else {
+                func(&tail)
+            }
+        } else {
+            None
+        }
+    }
+    let (_, ss1) = func(ss)?;
+    let mut s = String::new();
+    for c in ss.size..ss1.size {
+        s.push(ss.val.chars().nth(c).unwrap())
+    }
+    return Some((
+        Some(Ast {
+            val: Tree::Symbol(Arc::from(s)), // 可能会加上转义函数
+            col: ss.col,
+            lin: ss.lin,
+        }),
+        parse_empty(&ss1)?.1,
+    ));
+}
+
+pub fn parse_uint(ss: &StrStream) -> ParserOut {
+    let mut ss1 = ss.clone();
+    loop {
+        if let Some((head, tail)) = ss1.slice() {
+            if (head >= '0' && head <= '9') || head == '_' || head == ',' {
+                ss1 = tail;
+            } else {
+                return None;
+            }
+        } else {
+            break;
+        }
+    }
+    let mut s = String::new();
+    for c in ss.size..ss1.size {
+        s.push(ss.val.chars().nth(c).unwrap())
+    }
+    return Some((
+        Some(Ast {
+            val: Tree::Value(Value::Uint(BigUint::from_str(&s).unwrap())), //?
+            col: ss.col,
+            lin: ss.lin,
+        }),
+        parse_empty(&ss1)?.1,
+    ));
+}
+
+pub fn parse_int(ss: &StrStream) -> ParserOut {
+    let f = (ParserC::new(parse_char('+')) | ParserC::new(parse_char('-')))
+        + ParserC::new(Box::new(parse_uint));
+    if let Some((_, r)) = (f.f)(ss) {
+        let mut s = String::new();
+        for c in ss.size..r.size {
+            s.push(ss.val.chars().nth(c).unwrap())
+        }
+        return Some((
+            Some(Ast {
+                val: Tree::Value(Value::Int(BigInt::from_str(&s).unwrap())), //?
+                col: ss.col,
+                lin: ss.lin,
+            }),
+            parse_empty(&r)?.1,
+        ));
+    } else {
+        None
+    }
+}
+
+pub fn parse_rational(ss: &StrStream) -> ParserOut {
+    let f = (ParserC::new(Box::new(parse_int)) | ParserC::new(Box::new(parse_uint)))
+        + ParserC::new(parse_char('/'))
+        + (ParserC::new(Box::new(parse_int)) | ParserC::new(Box::new(parse_uint)));
+    if let Some((_, r)) = (f.f)(ss) {
+        let mut s = String::new();
+        for c in ss.size..r.size {
+            s.push(ss.val.chars().nth(c).unwrap())
+        }
+        return Some((
+            Some(Ast {
+                val: Tree::Value(Value::Rational(BigRational::from_str(&s).unwrap())), //?
+                col: ss.col,
+                lin: ss.lin,
+            }),
+            parse_empty(&r)?.1,
+        ));
+    } else {
+        None
+    }
+}
+
+fn parse_char_text(ss: &StrStream) -> ParserOut {
+    let f = (ParserC::new(parse_char('\'')) + ParserC::new(parse_char('\\')))
+        | ParserC::new(parse_char('\''));
+    if let Some((head, tail)) = (f.f)(ss)?.1.slice() {
+        Some((
+            Some(Ast {
+                val: Tree::Value(Value::Char(head)),
+                col: ss.col,
+                lin: ss.lin,
+            }),
+            tail,
+        ))
+    } else {
+        None
+    }
+}
+
 fn parse_string_text(ss: &StrStream) -> ParserOut {
     let f = ParserC::new(parse_char('"')) + ParserC::new(parse_sym('"'));
-    (f.f)(ss)
+    let (r, tail) = (f.f)(ss)?;
+    let (_, tail) = parse_empty(&tail.slice()?.1)?;
+    Some((r, tail))
     /*
     let mut ss1: StrStream = parse_char('"')(ss)?.1;
     let mut rs = String::new();
@@ -374,21 +426,145 @@ fn parse_string_text(ss: &StrStream) -> ParserOut {
 
 ///..............................................................
 
-//#[test]
-pub fn test_parse() {
-    let f = ParserC::new(Box::new(parse_string_text));
-    let r = StrStream::new("\"123\"").map(f.f);
-    println!("out: {:?}", r);
+pub fn parse_none(ss: &StrStream) -> ParserOut {
+    if let Some((_, tail)) = parse_string(":none")(ss) {
+        Some((Some(Ast {
+            val: Tree::Value(Value::None),
+            col: ss.col,
+            lin: ss.lin
+        }), parse_empty(&tail)?.1))
+    } else {
+        None
+    }
 }
 
-//#[test]
-pub fn test_parse_c() {
-    let r = parse_char('o')(&StrStream::new("opq"));
-    println!("out: {:?}", r);
+pub fn parse_bool(ss: &StrStream) -> ParserOut {
+    if let Some((_, tail)) = parse_string(":true")(ss) {
+        Some((Some(Ast {
+            val: Tree::Value(Value::Bool(true)),
+            col: ss.col,
+            lin: ss.lin
+        }), parse_empty(&tail)?.1))
+    } else if let Some((_, tail)) = parse_string(":false")(ss) {
+        Some((Some(Ast {
+            val: Tree::Value(Value::Bool(false)),
+            col: ss.col,
+            lin: ss.lin
+        }), parse_empty(&tail)?.1))
+    } else {
+        None
+    }
 }
 
-//#[test]
-pub fn test_parse_str() {
-    let r = parse_string("opq")(&StrStream::new("opq"));
-    println!("out: {:?}", r);
+pub fn parse_atom(ss: &StrStream) -> ParserOut {
+    if let Some(x) = parse_none(ss) {
+        Some(x)
+    } else if let Some(x) = parse_bool(ss) {
+        Some(x)
+    } else if let Some(x) = parse_char_text(ss) {
+        Some(x)
+    } else if let Some(x) = parse_string_text(ss) {
+        Some(x)
+    } else if let Some(x) = parse_rational(ss) {
+        Some(x)
+    } else if let Some(x) = parse_int(ss) {
+        Some(x)
+    } else if let Some(x) = parse_uint(ss) {
+        Some(x)
+    } else if let Some(x) = parse_symbol(ss) {
+        Some(x)
+    } else {
+        None
+    }
+}
+
+pub fn parse_open(ss: &StrStream) -> ParserOut {
+    let (_, tail) =
+        ((ParserC::new(parse_string("open")) + ParserC::new(Box::new(parse_empty))).f)(ss)?;
+    let (r, t2) = parse_string_text(&tail)?;
+    let t3 = t2
+        //.map(parse_not_char('\n'))?.1
+        .map(parse_char('\n'))?.1
+        .map(Box::new(parse_empty))?.1;
+    if let Some(Ast {
+        val: (Tree::Symbol(x)),
+        col,
+        lin,
+    }) = r
+    {
+        Some((
+            Some(Ast {
+                val: Tree::Open(x),
+                col,
+                lin,
+            }),
+            t3,
+        ))
+    } else {
+        None
+    }
+}
+
+pub fn parse_function(ss: &StrStream) -> ParserOut {
+    parse_uint(ss)
+}
+
+pub fn parse_module(ss: &StrStream) -> ParserOut {
+    // match
+    let (_, tail) =
+        ((ParserC::new(parse_string("module")) + ParserC::new(Box::new(parse_empty))).f)(ss)?;
+    let (name, tail) = parse_symbol(&tail)?;
+    let (_, tail) = ((ParserC::new(Box::new(parse_empty))
+        + ParserC::new(parse_string("="))
+        + ParserC::new(Box::new(parse_empty)))
+    .f)(&tail)?;
+    let (fv, tail) = ((ParserC::new(parse_char('f')).rpt(0)).f)(&tail)?;
+
+    let (_, tail) = parse_empty(&tail)?;
+
+    // get/box
+
+    let n;
+    let mut v: Vec<Arc<MFunction>> = Vec::new();
+
+    if let Some(Ast { val: Tree::Symbol(x), .. }) = name {
+        n = x;
+    } else {
+        return None;
+    }
+
+    if let Ast { val: Tree::Asts(ts), .. } = fv? {
+        for i in ts.into_iter() {
+            if let Ast { val: Tree::Function(x), .. } = i {
+                v.push(x);
+                //x
+            } else {
+                // 其实这段根本不会触发
+                //return None;
+                panic!("parse_module: ???理论上不会触发的错误");
+            }
+        }
+    } else {
+        return None;
+    }
+
+    Some((
+        Some(Ast {
+            val: Tree::Module(Arc::new(MModule { name: n, func: v })),
+            col: ss.col,
+            lin: ss.lin,
+        }),
+        tail,
+    ))
+}
+
+pub fn parse_file(ss: &StrStream) -> ParserOut {
+    let (a, b) = ((ParserC::new(Box::new(parse_open)).rpt(0)).f)(ss)?;
+
+    if let Ast { val: Tree::Asts(ts), .. } = a? {
+        let _ = ts.iter().map(|o| {
+
+        });
+    }
+    unimplemented!()
 }

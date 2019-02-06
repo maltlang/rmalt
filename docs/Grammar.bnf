@@ -1,39 +1,81 @@
-# Malt(rmalt) Grammar
+// Malt(rmalt) Grammar
 
 None ::= 'none' ;
 
 Bool ::= 'false' | 'true' ;
 
-Atom ::= Char | CharString | Rational | Int | Uint | Bool | None ;
+Atom ::= None | Bool | Char | CharString | Rational | Int | Uint | sym ;
 
-Tuple ::= '(' Obj (',' Obj)* | ',' ')' ;
+Tuple ::= '(' Obj ((',' Obj)* | ',') ')' ;
 
 Obj ::= Tuple | Atom ;
 
 Call ::= Expr Expr ;
 
-Lambda ::= '\' Mode = Sentences ;
+Lambda ::= '\' RawMode '=' Sentences '.' ;
 
-Expr ::= Call | If | Match | Let | Lambda ;
+RExpr ::= Let | If | Match | Lambda | Call | Atom ;
 
-Sentences ::= Expr (('\n', Sentences)* | '\n') ;
+Expr ::= '(' RExpr ')' | RExpr ;
 
-#Tag ::= "[<" sym ">]" ;
+Sentence ::= Expr ;
+
+Sentences ::= Sentence ('\n' Sentence)* ;
 
 If ::=
-    "if" Expr "then" Sentence "else" Sentences |
-    "if" Expr "then" Sentence ;
+    "if" Expr "then" Sentence "else" Sentences '.' |
+    "if" Expr "then" Sentence '.' ;
+
+VarName ::= sym ;
+
+ValueMode ::= Obj ;
+
+TupleMode ::= '(' RawMode ((',' RawMode)* | ',') ')' ;
+
+TypeMatchMode ::= VarName '(' sym ')' ;
+
+OrMode ::= RawMode '|' RawMode ;
+
+RawMode ::= TupleMode | TypeMatchMode | OrMode | ValueMode | VarName ;
+
+FunMode ::= VarName RawMode ;
+
+Mode ::= FunMode | RawMode ;
 
 Match ::=
     "match" Expr "with"
-    ('|' Mode "=>" Expr)*
+    ('|' RawMode "=>" Expr)*
 
-#Let ::= 'let' Mode = Sentences ;
+Let ::= 'let' RawMode '=' Sentences '->' Sentences '.' ;
 
-Module ::= 'module' sym '=' Let* '.';
+Tag ::= '<' VarName '>' ;
 
-Open :: "open" String "as" sym
+Tags ::= '[' Tag* ']' ;
 
-File ::= Open* Module;
+Fun ::= 'fun' FunMode '=' Sentences '.' ;
 
-Repl ::= Expr
+FunPlus ::= Tags Fun | Fun ;
+
+// 实验性功能
+
+TypeName ::= VarName ;
+
+TupleType ::= '(' (VarName ',')* ')' ;
+
+FunType ::= TypeName TupleType ;
+
+TypeTag ::= TypeName ':' FunType;
+
+// ...
+
+//Module ::= 'module' sym '=' (TypeTag | FunPlus)* ;
+
+Module ::= 'module' sym '=' FunPlus* ;
+
+Open ::= "open" CharString '\n' ;
+
+File ::= Open* Module ;
+
+ReplMode ::= ':' ("replMode" | "fileMode" | "loadFile") ;
+
+Repl ::= ReplMode | Open | FunPlus | Sentence ;
