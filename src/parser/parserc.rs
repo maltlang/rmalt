@@ -9,9 +9,6 @@ use num::BigRational;
 use num::BigUint;
 
 use runtime::Ast;
-use runtime::MFile;
-use runtime::MFunction;
-use runtime::MModule;
 use runtime::Tree;
 use runtime::Value;
 
