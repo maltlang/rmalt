@@ -23,10 +23,11 @@ pub enum Value {
     Int(BigInt),
     Rational(BigRational),
 
-    CharString(Arc<String>),
-    Tuple(Arc<Vec<Value>>),
+    CharString(String),
+    //Tuple(Vec<Value>),
 }
 
+/*
 #[derive(Debug, Clone)]
 pub struct MClosure {
     mode: Value,
@@ -37,23 +38,12 @@ pub struct MClosure {
 pub struct MFunction {
     name: Arc<String>,
     attr: Vec<Arc<String>>,
-    mode: Value,
+    mode: Ast,
     body: Ast
 }
 
-type Open = Arc<String>;
-
-#[derive(Debug, Clone)]
-pub struct MModule {
-    pub name: Arc<String>,
-    pub func: Vec<Arc<MFunction>>,
-}
-
-#[derive(Debug, Clone)]
-pub struct MFile {
-    loads: Vec<Open>,
-    modus: Arc<MModule>
-}
+type Load = Arc<String>;
+*/
 
 #[derive(Debug, Clone)]
 pub enum Tree {
@@ -63,15 +53,20 @@ pub enum Tree {
 
     Asts(Vec<Ast>),
 
-    Open(Open),
+    Tuple(Vec<Ast>),
+    /*
+    Load(Load),
+
+    If(If),
+
+    Match(Match),
 
     Closure(Arc<MClosure>),
 
     Function(Arc<MFunction>),
 
-    Module(Arc<MModule>),
-
-    Root(Arc<MFile>),
+    Macro(Arc<MFunction>),
+    */
 }
 
 #[derive(Debug, Clone)]

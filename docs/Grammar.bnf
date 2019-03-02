@@ -1,81 +1,23 @@
 // Malt(rmalt) Grammar
 
-None ::= 'none' ;
+Grammar ::= Expr ;
+
+Expr ::= Quote | Eval | HashTable | List | Tuple | Atom ;
+
+Quote ::= '&' Expr ;
+
+Eval ::= '~' Expr ;
+
+HashTable ::= '(' Pair* ')';
+
+Pair ::= Expr ':' Expr ;
+
+List ::=  '(' Expr '.' Expr ')' | '(' Expr* ')' ;
+
+Tuple ::= '[' Expr* ']' ;
+
+Atom ::= None | Bool | char | charstring | rational | int | uint | sym ;
 
 Bool ::= 'false' | 'true' ;
 
-Atom ::= None | Bool | Char | CharString | Rational | Int | Uint | sym ;
-
-Tuple ::= '(' Obj ((',' Obj)* | ',') ')' ;
-
-Obj ::= Tuple | Atom ;
-
-Call ::= Expr Expr ;
-
-Lambda ::= '\' RawMode '=' Sentences '.' ;
-
-RExpr ::= Let | If | Match | Lambda | Call | Atom ;
-
-Expr ::= '(' RExpr ')' | RExpr ;
-
-Sentence ::= Expr ;
-
-Sentences ::= Sentence ('\n' Sentence)* ;
-
-If ::=
-    "if" Expr "then" Sentence "else" Sentences '.' |
-    "if" Expr "then" Sentence '.' ;
-
-VarName ::= sym ;
-
-ValueMode ::= Obj ;
-
-TupleMode ::= '(' RawMode ((',' RawMode)* | ',') ')' ;
-
-TypeMatchMode ::= VarName '(' sym ')' ;
-
-OrMode ::= RawMode '|' RawMode ;
-
-RawMode ::= TupleMode | TypeMatchMode | OrMode | ValueMode | VarName ;
-
-FunMode ::= VarName RawMode ;
-
-Mode ::= FunMode | RawMode ;
-
-Match ::=
-    "match" Expr "with"
-    ('|' RawMode "=>" Expr)*
-
-Let ::= 'let' RawMode '=' Sentences '->' Sentences '.' ;
-
-Tag ::= '<' VarName '>' ;
-
-Tags ::= '[' Tag* ']' ;
-
-Fun ::= 'fun' FunMode '=' Sentences '.' ;
-
-FunPlus ::= Tags Fun | Fun ;
-
-// 实验性功能
-
-TypeName ::= VarName ;
-
-TupleType ::= '(' (VarName ',')* ')' ;
-
-FunType ::= TypeName TupleType ;
-
-TypeTag ::= TypeName ':' FunType;
-
-// ...
-
-//Module ::= 'module' sym '=' (TypeTag | FunPlus)* ;
-
-Module ::= 'module' sym '=' FunPlus* ;
-
-Open ::= "open" CharString '\n' ;
-
-File ::= Open* Module ;
-
-ReplMode ::= ':' ("replMode" | "fileMode" | "loadFile") ;
-
-Repl ::= ReplMode | Open | FunPlus | Sentence ;
+None ::= 'none' ;

@@ -7,7 +7,7 @@ mod parser;
 
 fn main() {
     let r =
-        parser::parse_atom(&parser::StrStream::new(
+        parser::parse_src::parse_atom(&parser::parserc::StrStream::new(
             "#false"
         ));
     println!("{:?}", r);
